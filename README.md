@@ -1,5 +1,6 @@
 # FeeAgro RWA Dashboard — Plataforma de Crédito e Ativos Tokenizados do Agro
 
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Vercel_Active-success?style=for-the-badge&logo=vercel)](https://feeagro-dashboard.vercel.app/dashboard)
 [![CI Pipeline](https://github.com/felipegardenghidev/feeagro-dashboard/actions/workflows/ci.yml/badge.svg)](https://github.com/felipegardenghidev/feeagro-dashboard/actions)
 ![Next.js](https://img.shields.io/badge/Next.js-16.1.6-black?style=flat-square&logo=next.js)
 ![React](https://img.shields.io/badge/React-19.2.3-blue?style=flat-square&logo=react)
@@ -8,6 +9,8 @@
 ![Vitest](https://img.shields.io/badge/Vitest-24_Passing-729B1B?style=flat-square&logo=vitest)
 ![Zustand](https://img.shields.io/badge/State-Zustand_Persist-orange?style=flat-square)
 ![Zod](https://img.shields.io/badge/Schema-Zod_v4-3068b7?style=flat-square)
+
+> 🚀 **Aplicação em Produção:** [https://feeagro-dashboard.vercel.app/dashboard](https://feeagro-dashboard.vercel.app/dashboard)
 
 Plataforma bancária digital e de gestão de **Real World Assets (RWA)** voltada ao agronegócio brasileiro (commodities tokenizadas como Soja e Milho), construída com arquitetura moderna orientada a componentes, reatividade em tempo real e suíte rigorosa de testes automatizados.
 
