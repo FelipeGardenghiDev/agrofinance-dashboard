@@ -5,33 +5,25 @@ import MainLayout from '../components/layout/MainLayout';
 import Card from '../components/ui/Card';
 import Badge from '../components/ui/Badge';
 import Spinner from '../components/ui/Spinner';
-import { mockAccount, mockPortfolio, mockKYC, mockTransactions, simulateApiDelay } from '@/lib/mockData';
-import { formatCurrency, formatPerformance, getPerformanceColor, getKYCStatusColor, translateStatus, formatRelativeDate } from '@/lib/utils';
-import type { Account, Portfolio, KYC, Transaction } from '@/lib/types';
+import { useFeeAgroStore } from '@/lib/store';
+import { formatCurrency, formatPerformance, getPerformanceColor, translateStatus, formatRelativeDate } from '@/lib/utils';
 import Link from 'next/link';
 
 export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
-  const [account, setAccount] = useState<Account | null>(null);
-  const [portfolio, setPortfolio] = useState<Portfolio | null>(null);
-  const [kyc, setKyc] = useState<KYC | null>(null);
-  const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([]);
+  const account = useFeeAgroStore((state) => state.account);
+  const portfolio = useFeeAgroStore((state) => state.portfolio);
+  const kyc = useFeeAgroStore((state) => state.kyc);
+  const transactions = useFeeAgroStore((state) => state.transactions);
 
   useEffect(() => {
-    const loadData = async () => {
-      setLoading(true);
-      await simulateApiDelay(800); // Simula chamada de API
-      
-      setAccount(mockAccount);
-      setPortfolio(mockPortfolio);
-      setKyc(mockKYC);
-      setRecentTransactions(mockTransactions.slice(0, 5));
-      
+    const timer = setTimeout(() => {
       setLoading(false);
-    };
-
-    loadData();
+    }, 300);
+    return () => clearTimeout(timer);
   }, []);
+
+  const recentTransactions = transactions.slice(0, 5);
 
   if (loading) {
     return (

@@ -7,36 +7,57 @@ import Badge from '../components/ui/Badge';
 import Spinner from '../components/ui/Spinner';
 import TransactionFilters, { FilterState } from '../components/features/TransactionFilters';
 import TransactionDetailModal from '../components/features/TransactionDetailModal';
-import { mockTransactions, simulateApiDelay, getFilteredTransactions } from '@/lib/mockData';
+import { useFeeAgroStore } from '@/lib/store';
 import { formatCurrency, formatRelativeDate, translateStatus, translateTransactionType, sortBy } from '@/lib/utils';
 import type { Transaction, SortField, SortDirection } from '@/lib/types';
 
 export default function TransactionsPage() {
   const [loading, setLoading] = useState(true);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const transactions = useFeeAgroStore((state) => state.transactions);
+  const [filters, setFilters] = useState<FilterState>({
+    type: 'ALL',
+    status: 'ALL',
+    searchTerm: '',
+  });
   const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>([]);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [sortField, setSortField] = useState<SortField>('date');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
   useEffect(() => {
-    const loadData = async () => {
-      setLoading(true);
-      await simulateApiDelay(600);
-      
-      setTransactions(mockTransactions);
-      setFilteredTransactions(mockTransactions);
-      
+    const timer = setTimeout(() => {
       setLoading(false);
-    };
-
-    loadData();
+    }, 300);
+    return () => clearTimeout(timer);
   }, []);
 
+  // Sincroniza e aplica filtros + ordenação
+  useEffect(() => {
+    let result = [...transactions];
+
+    if (filters.type && filters.type !== 'ALL') {
+      result = result.filter((t) => t.type === filters.type);
+    }
+    if (filters.status && filters.status !== 'ALL') {
+      result = result.filter((t) => t.status === filters.status);
+    }
+    if (filters.searchTerm) {
+      const term = filters.searchTerm.toLowerCase();
+      result = result.filter(
+        (t) =>
+          t.description.toLowerCase().includes(term) ||
+          t.memo?.toLowerCase().includes(term) ||
+          t.toAddress?.toLowerCase().includes(term)
+      );
+    }
+
+    result = sortBy(result, sortField, sortDirection);
+    setFilteredTransactions(result);
+  }, [transactions, filters, sortField, sortDirection]);
+
   // Aplicar filtros
-  const handleFilterChange = (filters: FilterState) => {
-    const filtered = getFilteredTransactions(filters);
-    setFilteredTransactions(filtered);
+  const handleFilterChange = (newFilters: FilterState) => {
+    setFilters(newFilters);
   };
 
   // Aplicar ordenação
@@ -44,9 +65,6 @@ export default function TransactionsPage() {
     const newDirection = sortField === field && sortDirection === 'asc' ? 'desc' : 'asc';
     setSortField(field);
     setSortDirection(newDirection);
-    
-    const sorted = sortBy(filteredTransactions, field, newDirection);
-    setFilteredTransactions(sorted);
   };
 
   if (loading) {
