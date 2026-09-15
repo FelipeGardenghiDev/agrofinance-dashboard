@@ -1,5 +1,6 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import type { Transaction } from './types';
 
 // Utility para merge de classes Tailwind
 
@@ -201,7 +202,7 @@ export const sortBy = <T>(
 // ==================== DEBOUNCE ====================
 
 // Debounce para otimização de inputs
-export const debounce = <T extends (...args: any[]) => any>(
+export const debounce = <T extends (...args: unknown[]) => unknown>(
   func: T,
   wait: number
 ): ((...args: Parameters<T>) => void) => {
@@ -217,5 +218,74 @@ export const debounce = <T extends (...args: any[]) => any>(
 
 // Gera ID único simples (só pro mock)
 export const generateId = (prefix = 'ID'): string => {
-  return `${prefix}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
 };
+
+// ==================== EXPORTAÇÃO CSV ====================
+
+// Gera conteúdo CSV estruturado com padrão BRL e encoding UTF-8 BOM
+export const generateTransactionsCSV = (transactions: Transaction[]): string => {
+  const headers = [
+    'ID',
+    'Data',
+    'Hora',
+    'Tipo',
+    'Categoria',
+    'Descrição',
+    'Valor (R$)',
+    'Status',
+    'Origem',
+    'Destino',
+    'Observações',
+    'Hash Blockchain',
+  ];
+
+  const escapeCSV = (value: string | number | undefined | null) => {
+    if (value === undefined || value === null) return '""';
+    const str = String(value).replace(/"/g, '""');
+    return `"${str}"`;
+  };
+
+  const rows = transactions.map((tx) => {
+    const d = new Date(tx.date);
+    const dateFormatted = !isNaN(d.getTime())
+      ? d.toLocaleDateString('pt-BR')
+      : tx.date;
+    const timeFormatted = !isNaN(d.getTime())
+      ? d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+      : '';
+    const formattedAmount =
+      (tx.type === 'IN' ? '' : '-') + tx.amount.toFixed(2).replace('.', ',');
+
+    return [
+      escapeCSV(tx.id),
+      escapeCSV(dateFormatted),
+      escapeCSV(timeFormatted),
+      escapeCSV(tx.type === 'IN' ? 'Entrada' : 'Saída'),
+      escapeCSV(translateCategory(tx.category)),
+      escapeCSV(tx.description),
+      escapeCSV(formattedAmount),
+      escapeCSV(translateStatus(tx.status)),
+      escapeCSV(tx.fromAddress || '-'),
+      escapeCSV(tx.toAddress || '-'),
+      escapeCSV(tx.memo || '-'),
+      escapeCSV(tx.txHash || '-'),
+    ].join(';');
+  });
+
+  return '\uFEFF' + [headers.join(';'), ...rows].join('\r\n');
+};
+
+// Dispara download automático do CSV no navegador
+export const downloadCSV = (content: string, filename: string) => {
+  if (typeof window === 'undefined') return;
+  const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.setAttribute('href', url);
+  link.setAttribute('download', filename);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+};

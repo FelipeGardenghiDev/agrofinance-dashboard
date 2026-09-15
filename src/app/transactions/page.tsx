@@ -1,25 +1,35 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import MainLayout from '../components/layout/MainLayout';
 import Card from '../components/ui/Card';
 import Badge from '../components/ui/Badge';
 import Spinner from '../components/ui/Spinner';
+import Button from '../components/ui/Button';
 import TransactionFilters, { FilterState } from '../components/features/TransactionFilters';
 import TransactionDetailModal from '../components/features/TransactionDetailModal';
-import { useFeeAgroStore } from '@/lib/store';
-import { formatCurrency, formatRelativeDate, translateStatus, translateTransactionType, sortBy } from '@/lib/utils';
+import { useAgroFinanceStore } from '@/lib/store';
+import { 
+  formatCurrency, 
+  formatRelativeDate, 
+  translateStatus, 
+  translateTransactionType, 
+  sortBy, 
+  generateTransactionsCSV, 
+  downloadCSV 
+} from '@/lib/utils';
 import type { Transaction, SortField, SortDirection } from '@/lib/types';
 
 export default function TransactionsPage() {
   const [loading, setLoading] = useState(true);
-  const transactions = useFeeAgroStore((state) => state.transactions);
+  const account = useAgroFinanceStore((state) => state.account);
+  const transactions = useAgroFinanceStore((state) => state.transactions);
+  const [exportFeedback, setExportFeedback] = useState<string | null>(null);
   const [filters, setFilters] = useState<FilterState>({
     type: 'ALL',
     status: 'ALL',
     searchTerm: '',
   });
-  const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>([]);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [sortField, setSortField] = useState<SortField>('date');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
@@ -31,8 +41,8 @@ export default function TransactionsPage() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Sincroniza e aplica filtros + ordenação
-  useEffect(() => {
+  // Deriva dados filtrados e ordenados de forma eficiente
+  const filteredTransactions = useMemo(() => {
     let result = [...transactions];
 
     if (filters.type && filters.type !== 'ALL') {
@@ -51,8 +61,7 @@ export default function TransactionsPage() {
       );
     }
 
-    result = sortBy(result, sortField, sortDirection);
-    setFilteredTransactions(result);
+    return sortBy(result, sortField, sortDirection);
   }, [transactions, filters, sortField, sortDirection]);
 
   // Aplicar filtros
@@ -65,6 +74,23 @@ export default function TransactionsPage() {
     const newDirection = sortField === field && sortDirection === 'asc' ? 'desc' : 'asc';
     setSortField(field);
     setSortDirection(newDirection);
+  };
+
+  // Exportar dados filtrados para CSV
+  const handleExportCSV = () => {
+    if (filteredTransactions.length === 0) return;
+    const csvData = generateTransactionsCSV(filteredTransactions);
+    const dateStr = new Date().toISOString().slice(0, 10);
+    downloadCSV(csvData, `agrofinance-extrato-${dateStr}.csv`);
+    setExportFeedback(`Extrato CSV exportado com sucesso (${filteredTransactions.length} registros)!`);
+    setTimeout(() => setExportFeedback(null), 3500);
+  };
+
+  // Disparar impressão / salvar em PDF
+  const handlePrint = () => {
+    if (typeof window !== 'undefined') {
+      window.print();
+    }
   };
 
   if (loading) {
@@ -80,14 +106,77 @@ export default function TransactionsPage() {
   return (
     <MainLayout>
       <div className="space-y-6">
-        {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Transações</h1>
-          <p className="text-gray-600 mt-1">Histórico completo de movimentações</p>
+        {/* Cabeçalho impresso exclusivo para modo de impressão */}
+        <div className="print-only border-b-2 border-gray-900 pb-4 mb-4">
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-2xl font-black text-gray-900 tracking-tight">AgroFinance RWA Bank</h1>
+              <p className="text-xs text-gray-600">Extrato Consolidado de Movimentações Financeiras</p>
+              <p className="text-xs text-gray-700 mt-2">
+                <strong>Titular:</strong> {account?.ownerName} &nbsp;|&nbsp; <strong>Conta:</strong> {account?.accountId}
+              </p>
+            </div>
+            <div className="text-right text-xs text-gray-600">
+              <p>Emissão: {new Date().toLocaleDateString('pt-BR')} às {new Date().toLocaleTimeString('pt-BR')}</p>
+              <p className="text-sm font-bold text-gray-900 mt-1">
+                Saldo Disponível: {formatCurrency(account?.availableBalance || 0)}
+              </p>
+            </div>
+          </div>
         </div>
 
+        {/* Header com Ações de Exportação */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 no-print">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Transações</h1>
+            <p className="text-gray-600 mt-1">Histórico completo de movimentações e liquidações</p>
+          </div>
+
+          <div className="flex items-center gap-2.5">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportCSV}
+              disabled={filteredTransactions.length === 0}
+              className="flex items-center gap-1.5"
+            >
+              <span>📥</span>
+              <span>Exportar CSV</span>
+              <span className="text-xs text-gray-500 font-normal">({filteredTransactions.length})</span>
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handlePrint}
+              className="flex items-center gap-1.5"
+            >
+              <span>🖨️</span>
+              <span>Imprimir / PDF</span>
+            </Button>
+          </div>
+        </div>
+
+        {/* Feedback de Exportação */}
+        {exportFeedback && (
+          <div className="bg-green-50 border border-green-200 text-green-800 text-sm px-4 py-2.5 rounded-lg flex items-center justify-between no-print animate-fadeIn">
+            <span className="flex items-center gap-2">
+              <span>✅</span>
+              <span>{exportFeedback}</span>
+            </span>
+            <button
+              onClick={() => setExportFeedback(null)}
+              className="text-green-600 hover:text-green-900 font-bold cursor-pointer"
+            >
+              ×
+            </button>
+          </div>
+        )}
+
         {/* Filtros */}
-        <TransactionFilters onFilterChange={handleFilterChange} />
+        <div className="no-print">
+          <TransactionFilters onFilterChange={handleFilterChange} />
+        </div>
 
         {/* Resumo */}
         <div className="flex items-center justify-between text-sm text-gray-600">
@@ -140,7 +229,7 @@ export default function TransactionsPage() {
                       </button>
                     </th>
                     <th className="text-center py-3 px-4 text-sm font-semibold text-gray-700">Status</th>
-                    <th className="text-center py-3 px-4 text-sm font-semibold text-gray-700">Ações</th>
+                    <th className="text-center py-3 px-4 text-sm font-semibold text-gray-700 no-print">Ações</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -175,7 +264,7 @@ export default function TransactionsPage() {
                           {translateStatus(transaction.status)}
                         </Badge>
                       </td>
-                      <td className="py-4 px-4 text-center">
+                      <td className="py-4 px-4 text-center no-print">
                         <button
                           onClick={() => setSelectedTransaction(transaction)}
                           className="text-gray-500 hover:text-gray-900 font-medium text-sm hover:cursor-pointer transition-colors"
@@ -193,10 +282,12 @@ export default function TransactionsPage() {
       </div>
 
       {/* Modal de Detalhes */}
-      <TransactionDetailModal
-        transaction={selectedTransaction}
-        onClose={() => setSelectedTransaction(null)}
-      />
+      <div className="no-print">
+        <TransactionDetailModal
+          transaction={selectedTransaction}
+          onClose={() => setSelectedTransaction(null)}
+        />
+      </div>
     </MainLayout>
   );
 }

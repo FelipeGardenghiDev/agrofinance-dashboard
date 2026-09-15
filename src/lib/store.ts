@@ -5,7 +5,7 @@ import type { OperationFormValues } from './validations';
 import { mockAccount, mockPortfolio, mockKYC, mockTransactions, mockRWAAssets } from './mockData';
 import { parseAmount } from './utils';
 
-export interface FeeAgroStore {
+export interface AgroFinanceStore {
   account: Account;
   portfolio: Portfolio;
   kyc: KYC;
@@ -20,7 +20,9 @@ export interface FeeAgroStore {
   getFilteredTransactions: (filters: { type?: string; status?: string; searchTerm?: string }) => Transaction[];
 }
 
-export const useFeeAgroStore = create<FeeAgroStore>()(
+export type FeeAgroStore = AgroFinanceStore;
+
+export const useAgroFinanceStore = create<AgroFinanceStore>()(
   persist(
     (set, get) => ({
       account: mockAccount,
@@ -148,6 +150,7 @@ export const useFeeAgroStore = create<FeeAgroStore>()(
         });
         if (typeof window !== 'undefined') {
           try {
+            localStorage.removeItem('agrofinance-storage-v1');
             localStorage.removeItem('feeagro-storage-v1');
           } catch {}
         }
@@ -178,7 +181,7 @@ export const useFeeAgroStore = create<FeeAgroStore>()(
       },
     }),
     {
-      name: 'feeagro-storage-v1',
+      name: 'agrofinance-storage-v1',
       storage: createJSONStorage(() => localStorage),
       onRehydrateStorage: () => (state) => {
         state?.setIsHydrated(true);
@@ -186,3 +189,7 @@ export const useFeeAgroStore = create<FeeAgroStore>()(
     }
   )
 );
+
+// Alias de retrocompatibilidade
+export const useFeeAgroStore = useAgroFinanceStore;
+

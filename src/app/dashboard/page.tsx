@@ -5,16 +5,18 @@ import MainLayout from '../components/layout/MainLayout';
 import Card from '../components/ui/Card';
 import Badge from '../components/ui/Badge';
 import Spinner from '../components/ui/Spinner';
-import { useFeeAgroStore } from '@/lib/store';
+import { useAgroFinanceStore } from '@/lib/store';
 import { formatCurrency, formatPerformance, getPerformanceColor, translateStatus, formatRelativeDate } from '@/lib/utils';
 import Link from 'next/link';
+import PortfolioAllocationChart from '../components/features/PortfolioAllocationChart';
+import CommodityTrendsChart from '../components/features/CommodityTrendsChart';
 
 export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
-  const account = useFeeAgroStore((state) => state.account);
-  const portfolio = useFeeAgroStore((state) => state.portfolio);
-  const kyc = useFeeAgroStore((state) => state.kyc);
-  const transactions = useFeeAgroStore((state) => state.transactions);
+  const account = useAgroFinanceStore((state) => state.account);
+  const portfolio = useAgroFinanceStore((state) => state.portfolio);
+  const kyc = useAgroFinanceStore((state) => state.kyc);
+  const transactions = useAgroFinanceStore((state) => state.transactions);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -101,10 +103,32 @@ export default function DashboardPage() {
           </Card>
         </div>
 
+        {/* Inteligência de Mercado & Performance RWA */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+          <div className="lg:col-span-5">
+            <PortfolioAllocationChart
+              assets={portfolio?.assets || []}
+              totalValue={portfolio?.totalValue || 0}
+            />
+          </div>
+          <div className="lg:col-span-7">
+            <CommodityTrendsChart />
+          </div>
+        </div>
+
         {/* Ativos RWA */}
         <div>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold text-gray-900">Seus Ativos RWA</h2>
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900">Seus Ativos RWA</h2>
+              <p className="text-xs text-gray-500">Custódia digital de commodities agrícolas</p>
+            </div>
+            <Link
+              href="/new-operation"
+              className="text-xs font-semibold px-3 py-1.5 bg-agro-azul-escuro text-white rounded-lg hover:bg-agro-azul transition-colors flex items-center gap-1.5 shadow-xs"
+            >
+              <span>+</span> Novo Aporte
+            </Link>
           </div>
           
           <Card>
@@ -118,6 +142,7 @@ export default function DashboardPage() {
                     <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">Preço</th>
                     <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">Valor Total</th>
                     <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">24h</th>
+                    <th className="text-center py-3 px-4 text-sm font-semibold text-gray-700">Ação</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -139,6 +164,14 @@ export default function DashboardPage() {
                         <span className={getPerformanceColor(asset.performance24h)}>
                           {formatPerformance(asset.performance24h)}
                         </span>
+                      </td>
+                      <td className="py-4 px-4 text-center">
+                        <Link
+                          href={`/new-operation?asset=${asset.assetId}`}
+                          className="inline-flex items-center text-xs font-semibold px-2.5 py-1 bg-agro-azul-escuro text-white rounded hover:bg-agro-azul transition-colors cursor-pointer"
+                        >
+                          Aportar +
+                        </Link>
                       </td>
                     </tr>
                   ))}

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useFeeAgroStore } from '@/lib/store';
+import { useAgroFinanceStore } from '@/lib/store';
 import { formatCurrency } from '@/lib/utils';
 
 const Header = () => {
@@ -11,8 +11,8 @@ const Header = () => {
   const [resetFeedback, setResetFeedback] = useState(false);
   const pathname = usePathname();
 
-  const account = useFeeAgroStore((state) => state.account);
-  const resetToDefaultData = useFeeAgroStore((state) => state.resetToDefaultData);
+  const account = useAgroFinanceStore((state) => state.account);
+  const resetToDefaultData = useAgroFinanceStore((state) => state.resetToDefaultData);
 
   const handleReset = () => {
     if (confirm('Deseja restaurar os dados originais da demonstração?')) {
@@ -33,7 +33,7 @@ const Header = () => {
             </div>
             <div>
               <h1 className="text-lg font-black tracking-tight text-white flex items-center gap-1.5">
-                FeeAgroBank
+                AgroFinance
                 <span className="text-[10px] uppercase font-bold tracking-widest bg-agro-verde-musgo/80 text-white px-1.5 py-0.5 rounded">
                   RWA
                 </span>
@@ -61,9 +61,9 @@ const Header = () => {
             <button
               onClick={handleReset}
               title="Restaurar dados iniciais da demo"
-              className="text-xs px-2.5 py-1.5 rounded-lg border border-white/20 text-gray-200 hover:text-white hover:bg-white/10 transition-colors flex items-center gap-1.5"
+              className="text-xs px-2.5 py-1.5 rounded-lg border border-white/20 text-gray-200 hover:text-white hover:bg-white/10 hover:border-white/40 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
             >
-              <span>🔄</span>
+              <span className={resetFeedback ? 'animate-spin inline-block' : 'inline-block'}>🔄</span>
               <span>{resetFeedback ? 'Dados Resetados!' : 'Restaurar Demo'}</span>
             </button>
 
@@ -136,9 +136,10 @@ const Header = () => {
                 handleReset();
                 setMobileMenuOpen(false);
               }}
-              className="text-xs px-3 py-1.5 rounded-lg border border-white/30 text-white hover:bg-white/10"
+              className="text-xs px-3 py-1.5 rounded-lg border border-white/30 text-white hover:bg-white/10 active:scale-95 transition-all cursor-pointer flex items-center gap-1.5"
             >
-              Restaurar Demo
+              <span>🔄</span>
+              <span>Restaurar Demo</span>
             </button>
           </div>
         </div>

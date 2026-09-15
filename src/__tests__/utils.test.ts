@@ -8,6 +8,7 @@ import {
   sortBy,
   truncateHash,
   maskCPF,
+  generateTransactionsCSV,
 } from '../lib/utils';
 
 describe('utils - Funções Utilitárias e de Formatação', () => {
@@ -72,6 +73,43 @@ describe('utils - Funções Utilitárias e de Formatação', () => {
 
       const desc = sortBy(items, 'val', 'desc');
       expect(desc.map(i => i.val)).toEqual([50, 20, 10]);
+    });
+  });
+
+  describe('generateTransactionsCSV', () => {
+    it('deve gerar CSV estruturado com BOM UTF-8, cabeçalhos e valores formatados', () => {
+      const mockTx = [
+        {
+          id: 'TX-001',
+          date: '2026-03-10T14:30:00Z',
+          description: 'Venda de Soja',
+          type: 'IN' as const,
+          category: 'investment' as const,
+          amount: 15400.5,
+          status: 'completed' as const,
+          fromAddress: '0x123',
+          toAddress: '0x456',
+          txHash: '0xabc123',
+          memo: 'Safra boa',
+        },
+      ];
+
+      const csv = generateTransactionsCSV(mockTx);
+
+      // Deve começar com BOM UTF-8
+      expect(csv.startsWith('\uFEFF')).toBe(true);
+
+      // Deve conter cabeçalhos
+      expect(csv).toContain('ID;Data;Hora;Tipo;Categoria;Descrição;Valor (R$);Status;Origem;Destino;Observações;Hash Blockchain');
+
+      // Deve conter linha da transação formatada
+      expect(csv).toContain('"TX-001"');
+      expect(csv).toContain('"Entrada"');
+      expect(csv).toContain('"Investimento"');
+      expect(csv).toContain('"Venda de Soja"');
+      expect(csv).toContain('"15400,50"');
+      expect(csv).toContain('"Concluída"');
+      expect(csv).toContain('"0xabc123"');
     });
   });
 });

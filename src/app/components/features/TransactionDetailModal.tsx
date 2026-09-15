@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Transaction } from '@/lib/types';
-import { formatCurrency, formatDateTime, translateStatus, translateCategory, translateTransactionType, truncateHash } from '@/lib/utils';
+import { formatCurrency, formatDateTime, translateStatus, translateCategory, translateTransactionType } from '@/lib/utils';
 import Badge from '../ui/Badge';
 import Button from '../ui/Button';
 

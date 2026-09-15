@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
@@ -10,7 +10,7 @@ import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import { createOperationSchema, OperationFormValues } from '@/lib/validations';
 import { formatCurrency, parseAmount } from '@/lib/utils';
-import { useFeeAgroStore } from '@/lib/store';
+import { useAgroFinanceStore } from '@/lib/store';
 import type { Transaction } from '@/lib/types';
 
 // Sugestões rápidas para facilitar testes de recrutadores
@@ -39,9 +39,9 @@ export default function NewOperationPage() {
   const [executionError, setExecutionError] = useState<string | null>(null);
   const [executedTx, setExecutedTx] = useState<Transaction | null>(null);
 
-  const account = useFeeAgroStore((state) => state.account);
-  const portfolio = useFeeAgroStore((state) => state.portfolio);
-  const executeOperation = useFeeAgroStore((state) => state.executeOperation);
+  const account = useAgroFinanceStore((state) => state.account);
+  const portfolio = useAgroFinanceStore((state) => state.portfolio);
+  const executeOperation = useAgroFinanceStore((state) => state.executeOperation);
 
   const schema = useMemo(() => {
     return createOperationSchema(account.availableBalance);
@@ -63,6 +63,18 @@ export default function NewOperationPage() {
       assetId: '',
     },
   });
+
+  // Preenche ativo automaticamente se vier de link externo ou dashboard (?asset=ID)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const assetParam = params.get('asset');
+    if (assetParam && portfolio.assets.some((a) => a.assetId === assetParam)) {
+      setValue('type', 'investment_rwa');
+      setValue('assetId', assetParam);
+      setValue('beneficiary', QUICK_BENEFICIARIES.investment_rwa[0].value);
+    }
+  }, [portfolio.assets, setValue]);
 
   const operationType = watch('type');
   const currentAmountStr = watch('amount');
@@ -462,7 +474,7 @@ export default function NewOperationPage() {
                         key={b.label}
                         type="button"
                         onClick={() => handleQuickBeneficiary(b.value)}
-                        className="text-xs px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-colors"
+                        className="text-xs px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-all cursor-pointer hover:shadow-xs active:scale-95 border border-transparent hover:border-gray-300"
                       >
                         + {b.label}
                       </button>
@@ -489,7 +501,7 @@ export default function NewOperationPage() {
                     key={val}
                     type="button"
                     onClick={() => handleQuickAmount(val)}
-                    className="text-xs px-2.5 py-1 bg-blue-50 text-blue-800 hover:bg-blue-100 font-medium rounded-md transition-colors"
+                    className="text-xs px-2.5 py-1 bg-blue-50 text-blue-800 hover:bg-blue-100 font-medium rounded-md transition-all cursor-pointer hover:shadow-xs active:scale-95 border border-blue-100 hover:border-blue-200"
                   >
                     + {formatCurrency(val)}
                   </button>
@@ -497,7 +509,7 @@ export default function NewOperationPage() {
                 <button
                   type="button"
                   onClick={() => handleQuickAmount(account.availableBalance)}
-                  className="text-xs px-2.5 py-1 bg-gray-100 text-gray-800 hover:bg-gray-200 font-medium rounded-md transition-colors"
+                  className="text-xs px-2.5 py-1 bg-gray-100 text-gray-800 hover:bg-gray-200 font-medium rounded-md transition-all cursor-pointer hover:shadow-xs active:scale-95 border border-gray-200"
                 >
                   Saldo Máximo
                 </button>
