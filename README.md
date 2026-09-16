@@ -6,7 +6,7 @@
 ![React](https://img.shields.io/badge/React-19.2.3-blue?style=flat-square&logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue?style=flat-square&logo=typescript)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-38bdf8?style=flat-square&logo=tailwind-css)
-![Vitest](https://img.shields.io/badge/Vitest-40_Passing-729B1B?style=flat-square&logo=vitest)
+![Vitest](https://img.shields.io/badge/Vitest-48_Passing-729B1B?style=flat-square&logo=vitest)
 ![Zustand](https://img.shields.io/badge/State-Zustand_Persist-orange?style=flat-square)
 ![Zod](https://img.shields.io/badge/Schema-Zod_v4-3068b7?style=flat-square)
 
@@ -63,7 +63,13 @@ O **AgroFinance** entrega uma interface de internet banking corporativo que cons
 * **Ordenação Bidirecional:** Ordenação clicável por data de movimentação ou por valor financeiro.
 * **Modal de Detalhes Acessível:** Comprovante completo com hash de blockchain, fechamento por `Esc` e banners para certificados de resgate e liquidação RWA.
 
-### 🔄 5. Ferramenta de Demonstração (Reset State)
+### 🔔 5. Central de Alertas & Notificações RWA
+* **Notificações Reativas em Tempo Real:** Disparadas instantaneamente a cada operação financeira (PIX, TED), aporte RWA, liquidação a mercado ou resgate físico com emissão de certificado.
+* **Alertas do Agronegócio:** Notificações semente para oscilações de cotações na B3/CBOT (+2.3% Soja), autorização de carregamento em silos (Sorriso/MT) e conformidade cadastral (KYC Bacen).
+* **Filtros e Gestão:** Abas de filtragem (*Todas*, *Não lidas*, *🌾 RWA & Grãos*), marcar individualmente ou todas como lidas, exclusão pontual ou limpeza completa.
+* **Badging e Acessibilidade:** Badge com contagem de não lidas e animação de pulso, dropdown com suporte a teclado (`Escape`) e fechamento ao clicar fora.
+
+### 🔄 6. Ferramenta de Demonstração (Reset State)
 * Botão **"Restaurar Demo"** no Header: permite aos avaliadores técnicos realizarem quantas operações desejarem e resetar os dados ao estado inicial com 1 clique.
 
 ---
@@ -81,9 +87,9 @@ agrofinance-dashboard/
 │   │   ├── transactions/             # Extrato detalhado com filtros e ordenação
 │   │   ├── new-operation/            # Formulário reativo de transferência/investimento
 │   │   ├── components/               # Camada de Componentes
-│   │   │   ├── ui/                   # Design System atômico (Button, Card, Badge, Input, Spinner)
+│   │   │   ├── ui/                   # Design System atômico (Button, Card, Badge, Input, Spinner, ThemeToggle)
 │   │   │   ├── layout/               # Header com rotas ativas e MainLayout responsivo
-│   │   │   └── features/             # Componentes de negócio (TransactionFilters, DetailModal, Charts)
+│   │   │   └── features/             # Componentes de negócio (TransactionFilters, DetailModal, Charts, NotificationCenter)
 │   ├── lib/
 │   │   ├── store.ts                  # Zustand Store com middleware persist (localStorage)
 │   │   ├── validations.ts            # Schemas Zod dinâmicos (createOperationSchema)
@@ -95,7 +101,9 @@ agrofinance-dashboard/
 │       ├── store.test.ts             # Testes de mutação de estado e liquidação
 │       ├── utils.test.ts             # Testes de formatação monetária e helpers
 │       ├── TransactionFilters.test.tsx # Teste de integração de filtros
-│       └── charts.test.tsx           # Testes dos componentes de gráficos interativos
+│       ├── charts.test.tsx           # Testes dos componentes de gráficos interativos
+│       ├── ThemeToggle.test.tsx      # Testes do alternador de tema
+│       └── NotificationCenter.test.tsx # Testes da central de notificações e alertas
 ├── vitest.config.ts                  # Configuração do ambiente jsdom e aliases
 └── vitest.setup.ts                   # Setup com jest-dom matchers
 ```
@@ -111,30 +119,32 @@ agrofinance-dashboard/
 
 ## 🧪 Suíte de Testes Automatizados (Vitest + Testing Library)
 
-O projeto conta com **40 testes automatizados** cobrindo regras de negócio críticas:
+O projeto conta com **48 testes automatizados** cobrindo regras de negócio críticas:
 
 ```bash
 pnpm test
 ```
 
 ```text
- ✓ src/__tests__/utils.test.ts (9 tests)
  ✓ src/__tests__/validations.test.ts (9 tests)
- ✓ src/__tests__/store.test.ts (11 tests)
+ ✓ src/__tests__/utils.test.ts (9 tests)
+ ✓ src/__tests__/store.test.ts (13 tests)
  ✓ src/__tests__/ThemeToggle.test.tsx (4 tests)
  ✓ src/__tests__/charts.test.tsx (4 tests)
  ✓ src/__tests__/TransactionFilters.test.tsx (3 tests)
+ ✓ src/__tests__/NotificationCenter.test.tsx (6 tests)
 
- Test Files  6 passed (6)
-      Tests  40 passed (40)
+ Test Files  7 passed (7)
+      Tests  48 passed (48)
 ```
 
 ### O que os testes cobrem:
 1. **Regras de Negócio Financeiras & RWA:** Validações de limites de saldo em dinheiro, limites de custódia de tokens, bloqueio de valores negativos/zero e obrigatoriedade de armazém credenciado para resgate físico.
 2. **Mutação de Estado & Liquidação:** Débito/crédito de saldo, compra de tokens, venda a mercado, queima (*burn*) de tokens no resgate físico e persistência do tema.
-3. **Alternância de Tema (Dark Mode):** Renderização acessível, abertura/fechamento por teclado (`Esc`), seleção e alteração do tema no store.
-4. **Helpers de Formatação & CSV:** Validação de conversão de moeda (`R$ 1.250,50`), datas relativas, mascaramento de CPF, truncamento de hashes e geração de CSV estruturado com BOM UTF-8.
-5. **Interatividade de Interface & Gráficos:** Renderização de filtros, alteração de tipos, busca textual dinâmica e comportamento do gráfico Donut e histórico.
+3. **Central de Notificações & Alertas:** Renderização de badge com contagem de não lidas, abertura/fechamento por teclado (`Esc`), alternância de filtros (*Todas*, *Não lidas*, *RWA*), marcar individual ou todas como lidas, remoção e limpeza total.
+4. **Alternância de Tema (Dark Mode):** Renderização acessível, abertura/fechamento por teclado (`Esc`), seleção e alteração do tema no store.
+5. **Helpers de Formatação & CSV:** Validação de conversão de moeda (`R$ 1.250,50`), datas relativas, mascaramento de CPF, truncamento de hashes e geração de CSV estruturado com BOM UTF-8.
+6. **Interatividade de Interface & Gráficos:** Renderização de filtros, alteração de tipos, busca textual dinâmica e comportamento do gráfico Donut e histórico.
 
 ---
 

@@ -5,7 +5,8 @@ import type {
   KYC, 
   Transaction, 
   AppData,
-  Warehouse
+  Warehouse,
+  AppNotification
 } from './types';
 
 // ==================== CONTA ====================
@@ -226,12 +227,61 @@ export const mockTransactions: Transaction[] = [
   },
 ];
 
+// ==================== NOTIFICAÇÕES & ALERTAS ====================
+export const mockNotifications: AppNotification[] = [
+  {
+    id: 'NOTIF-001',
+    title: 'Cotação em Alta: Soja Premium',
+    message: 'O token SOJA24 valorizou +2.3% nas últimas 24h, cotado a R$ 48,50/saca na B3/CBOT.',
+    timestamp: '2026-02-08T11:45:00Z',
+    type: 'rwa_price',
+    priority: 'high',
+    read: false,
+    actionUrl: '/dashboard',
+    actionLabel: 'Ver Gráfico',
+  },
+  {
+    id: 'NOTIF-002',
+    title: 'Liberação de Armazém (CDA/WA)',
+    message: 'Lote de 500 sacas de Milho Híbrido autorizado para expedição no Silo Central de Sorriso/MT.',
+    timestamp: '2026-02-08T08:30:00Z',
+    type: 'redemption',
+    priority: 'medium',
+    read: false,
+    actionUrl: '/transactions',
+    actionLabel: 'Ver Comprovante',
+  },
+  {
+    id: 'NOTIF-003',
+    title: 'Cadastro de Produtor Rural Aprovado',
+    message: 'Seu status KYC e documentação regulatória junto ao Banco Central do Brasil estão 100% regulares.',
+    timestamp: '2026-02-07T16:20:00Z',
+    type: 'kyc',
+    priority: 'low',
+    read: true,
+    actionUrl: '/dashboard',
+    actionLabel: 'Ver Status',
+  },
+  {
+    id: 'NOTIF-004',
+    title: 'Dividendos de Milho Creditados',
+    message: 'Rendimento de R$ 842,50 depositado automaticamente referente à custódia de MLHO25.',
+    timestamp: '2026-02-06T11:05:42Z',
+    type: 'operation',
+    priority: 'medium',
+    read: true,
+    actionUrl: '/transactions',
+    actionLabel: 'Extrato',
+  },
+];
+
 // ==================== DADOS CONSOLIDADOS ====================
 export const mockAppData: AppData = {
   account: mockAccount,
   portfolio: mockPortfolio,
   kyc: mockKYC,
   transactions: mockTransactions,
+  notifications: mockNotifications,
 };
 
 // ==================== HELPERS ====================

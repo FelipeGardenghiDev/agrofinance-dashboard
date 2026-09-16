@@ -122,12 +122,29 @@ export interface SortConfig {
   direction: SortDirection;
 }
 
+// ==================== NOTIFICAÇÕES & ALERTAS ====================
+export type NotificationType = 'system' | 'rwa_price' | 'redemption' | 'kyc' | 'operation';
+export type NotificationPriority = 'low' | 'medium' | 'high';
+
+export interface AppNotification {
+  id: string;
+  title: string;
+  message: string;
+  timestamp: string; // ISO string
+  type: NotificationType;
+  priority?: NotificationPriority;
+  read: boolean;
+  actionUrl?: string;
+  actionLabel?: string;
+}
+
 // ==================== DADOS DA APLICAÇÃO ====================
 export interface AppData {
   account: Account;
   portfolio: Portfolio;
   kyc: KYC;
   transactions: Transaction[];
+  notifications: AppNotification[];
 }
 
 // ==================== TEMA ====================

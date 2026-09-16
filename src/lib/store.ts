@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import type { Account, Portfolio, KYC, Transaction, RWAAsset, ThemeMode } from './types';
+import type { Account, Portfolio, KYC, Transaction, RWAAsset, ThemeMode, AppNotification } from './types';
 import type { OperationFormValues } from './validations';
-import { mockAccount, mockPortfolio, mockKYC, mockTransactions, mockRWAAssets } from './mockData';
+import { mockAccount, mockPortfolio, mockKYC, mockTransactions, mockRWAAssets, mockNotifications } from './mockData';
 import { parseAmount } from './utils';
 
 export const applyThemeToDocument = (theme: ThemeMode) => {
@@ -24,6 +24,7 @@ export interface AgroFinanceStore {
   portfolio: Portfolio;
   kyc: KYC;
   transactions: Transaction[];
+  notifications: AppNotification[];
   theme: ThemeMode;
   isHydrated: boolean;
   setIsHydrated: (val: boolean) => void;
@@ -34,6 +35,13 @@ export interface AgroFinanceStore {
   resetToDefaultData: () => void;
   addDeposit: (amount: number, description?: string) => void;
   getFilteredTransactions: (filters: { type?: string; status?: string; searchTerm?: string }) => Transaction[];
+
+  // Ações de Notificações
+  markNotificationAsRead: (id: string) => void;
+  markAllNotificationsAsRead: () => void;
+  deleteNotification: (id: string) => void;
+  clearAllNotifications: () => void;
+  addNotification: (notification: Omit<AppNotification, 'id' | 'timestamp' | 'read'> & { id?: string; timestamp?: string; read?: boolean }) => void;
 }
 
 export type FeeAgroStore = AgroFinanceStore;
@@ -45,6 +53,7 @@ export const useAgroFinanceStore = create<AgroFinanceStore>()(
       portfolio: mockPortfolio,
       kyc: mockKYC,
       transactions: mockTransactions,
+      notifications: mockNotifications,
       theme: 'system' as ThemeMode,
       isHydrated: false,
 
@@ -125,6 +134,18 @@ export const useAgroFinanceStore = create<AgroFinanceStore>()(
             txHash: `0x${Math.random().toString(16).substring(2, 6)}...${Math.random().toString(16).substring(2, 6)}`,
           };
 
+          const saleNotif: AppNotification = {
+            id: `NOTIF-${Date.now().toString().slice(-6)}`,
+            title: 'Liquidação RWA Concluída',
+            message: `Venda de ${tokensToSell.toLocaleString('pt-BR')} tokens de ${targetAsset.assetName} liquidada com crédito de ${saleValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} em conta.`,
+            timestamp: new Date().toISOString(),
+            type: 'operation',
+            priority: 'medium',
+            read: false,
+            actionUrl: '/transactions',
+            actionLabel: 'Ver Comprovante',
+          };
+
           set({
             account: {
               ...state.account,
@@ -132,6 +153,7 @@ export const useAgroFinanceStore = create<AgroFinanceStore>()(
             },
             portfolio: updatedPortfolio,
             transactions: [newTransaction, ...state.transactions],
+            notifications: [saleNotif, ...state.notifications],
           });
 
           return { success: true, transaction: newTransaction };
@@ -200,9 +222,22 @@ export const useAgroFinanceStore = create<AgroFinanceStore>()(
             txHash: `0x${Math.random().toString(16).substring(2, 6)}...${Math.random().toString(16).substring(2, 6)}`,
           };
 
+          const redeemNotif: AppNotification = {
+            id: `NOTIF-${Date.now().toString().slice(-6)}`,
+            title: 'Certificado CDA/WA Emitido',
+            message: `Resgate físico de ${tokensToRedeem.toLocaleString('pt-BR')} sacas liberado para retirada no armazém ${warehouseName}.`,
+            timestamp: new Date().toISOString(),
+            type: 'redemption',
+            priority: 'high',
+            read: false,
+            actionUrl: '/transactions',
+            actionLabel: 'Ver Comprovante',
+          };
+
           set({
             portfolio: updatedPortfolio,
             transactions: [newTransaction, ...state.transactions],
+            notifications: [redeemNotif, ...state.notifications],
           });
 
           return { success: true, transaction: newTransaction };
@@ -267,6 +302,25 @@ export const useAgroFinanceStore = create<AgroFinanceStore>()(
           txHash: `0x${Math.random().toString(16).substring(2, 6)}...${Math.random().toString(16).substring(2, 6)}`,
         };
 
+        // Notificação da operação
+        const opNotif: AppNotification = {
+          id: `NOTIF-${Date.now().toString().slice(-6)}`,
+          title:
+            data.type === 'investment_rwa'
+              ? 'Aporte RWA Confirmado'
+              : `${data.type.toUpperCase()} Enviado`,
+          message:
+            data.type === 'investment_rwa'
+              ? `Compra de tokens de ${assetName || 'Ativo Agro'} concluída no valor de ${amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}.`
+              : `Transferência de ${amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} enviada para ${data.beneficiary}.`,
+          timestamp: new Date().toISOString(),
+          type: 'operation',
+          priority: data.type === 'investment_rwa' ? 'medium' : 'low',
+          read: false,
+          actionUrl: data.type === 'investment_rwa' ? '/dashboard' : '/transactions',
+          actionLabel: data.type === 'investment_rwa' ? 'Ver Portfólio' : 'Ver Extrato',
+        };
+
         // Aplica as mudanças no estado
         set({
           account: {
@@ -275,6 +329,7 @@ export const useAgroFinanceStore = create<AgroFinanceStore>()(
           },
           portfolio: updatedPortfolio,
           transactions: [newTransaction, ...state.transactions],
+          notifications: [opNotif, ...state.notifications],
         });
 
         return { success: true, transaction: newTransaction };
@@ -297,12 +352,25 @@ export const useAgroFinanceStore = create<AgroFinanceStore>()(
           memo: 'Depósito simulado via PIX',
         };
 
+        const depositNotif: AppNotification = {
+          id: `NOTIF-${Date.now().toString().slice(-6)}`,
+          title: 'Depósito PIX Recebido',
+          message: `Depósito de ${amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} creditado em seu saldo disponível.`,
+          timestamp: new Date().toISOString(),
+          type: 'operation',
+          priority: 'medium',
+          read: false,
+          actionUrl: '/transactions',
+          actionLabel: 'Ver Extrato',
+        };
+
         set({
           account: {
             ...state.account,
             availableBalance: newAvailableBalance,
           },
           transactions: [newTransaction, ...state.transactions],
+          notifications: [depositNotif, ...state.notifications],
         });
       },
 
@@ -315,6 +383,7 @@ export const useAgroFinanceStore = create<AgroFinanceStore>()(
           },
           kyc: { ...mockKYC },
           transactions: [...mockTransactions],
+          notifications: [...mockNotifications],
         });
         if (typeof window !== 'undefined') {
           try {
@@ -322,6 +391,47 @@ export const useAgroFinanceStore = create<AgroFinanceStore>()(
             localStorage.removeItem('feeagro-storage-v1');
           } catch {}
         }
+      },
+
+      markNotificationAsRead: (id: string) => {
+        set((state) => ({
+          notifications: state.notifications.map((n) =>
+            n.id === id ? { ...n, read: true } : n
+          ),
+        }));
+      },
+
+      markAllNotificationsAsRead: () => {
+        set((state) => ({
+          notifications: state.notifications.map((n) => ({ ...n, read: true })),
+        }));
+      },
+
+      deleteNotification: (id: string) => {
+        set((state) => ({
+          notifications: state.notifications.filter((n) => n.id !== id),
+        }));
+      },
+
+      clearAllNotifications: () => {
+        set({ notifications: [] });
+      },
+
+      addNotification: (notif) => {
+        const newNotif: AppNotification = {
+          id: notif.id || `NOTIF-${Date.now().toString().slice(-6)}`,
+          title: notif.title,
+          message: notif.message,
+          timestamp: notif.timestamp || new Date().toISOString(),
+          type: notif.type,
+          priority: notif.priority || 'medium',
+          read: notif.read ?? false,
+          actionUrl: notif.actionUrl,
+          actionLabel: notif.actionLabel,
+        };
+        set((state) => ({
+          notifications: [newNotif, ...state.notifications],
+        }));
       },
 
       getFilteredTransactions: (filters: { type?: string; status?: string; searchTerm?: string }) => {

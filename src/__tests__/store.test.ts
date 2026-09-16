@@ -189,6 +189,65 @@ describe('useAgroFinanceStore - Gerenciamento de Estado e Reatividade', () => {
     expect(useAgroFinanceStore.getState().theme).toBe('system');
   });
 
+  it('deve gerenciar estado de notificações (marcar como lida, ler todas, adicionar e limpar)', () => {
+    const initialState = useAgroFinanceStore.getState();
+    expect(initialState.notifications.length).toBeGreaterThan(0);
+
+    const unreadNotif = initialState.notifications.find((n) => !n.read)!;
+    expect(unreadNotif).toBeDefined();
+
+    // Marcar como lida
+    useAgroFinanceStore.getState().markNotificationAsRead(unreadNotif.id);
+    const updatedNotif = useAgroFinanceStore.getState().notifications.find((n) => n.id === unreadNotif.id)!;
+    expect(updatedNotif.read).toBe(true);
+
+    // Marcar todas como lidas
+    useAgroFinanceStore.getState().markAllNotificationsAsRead();
+    expect(useAgroFinanceStore.getState().notifications.every((n) => n.read)).toBe(true);
+
+    // Excluir notificação
+    const countBeforeDelete = useAgroFinanceStore.getState().notifications.length;
+    useAgroFinanceStore.getState().deleteNotification(unreadNotif.id);
+    expect(useAgroFinanceStore.getState().notifications.length).toBe(countBeforeDelete - 1);
+    expect(useAgroFinanceStore.getState().notifications.find((n) => n.id === unreadNotif.id)).toBeUndefined();
+
+    // Adicionar notificação customizada
+    useAgroFinanceStore.getState().addNotification({
+      title: 'Alerta Teste',
+      message: 'Mensagem de teste',
+      type: 'rwa_price',
+      priority: 'high',
+    });
+    const newest = useAgroFinanceStore.getState().notifications[0];
+    expect(newest.title).toBe('Alerta Teste');
+    expect(newest.read).toBe(false);
+
+    // Limpar todas
+    useAgroFinanceStore.getState().clearAllNotifications();
+    expect(useAgroFinanceStore.getState().notifications.length).toBe(0);
+  });
+
+  it('deve disparar notificação automaticamente ao executar operações no store', () => {
+    const countBefore = useAgroFinanceStore.getState().notifications.length;
+
+    useAgroFinanceStore.getState().executeOperation({
+      type: 'pix',
+      beneficiary: '123.456.789-00',
+      amount: '250,00',
+    });
+
+    const notifsAfterOp = useAgroFinanceStore.getState().notifications;
+    expect(notifsAfterOp.length).toBe(countBefore + 1);
+    expect(notifsAfterOp[0].title).toContain('PIX');
+    expect(notifsAfterOp[0].read).toBe(false);
+
+    // Depósito
+    useAgroFinanceStore.getState().addDeposit(500);
+    const notifsAfterDep = useAgroFinanceStore.getState().notifications;
+    expect(notifsAfterDep.length).toBe(countBefore + 2);
+    expect(notifsAfterDep[0].title).toContain('Depósito');
+  });
+
   it('deve manter compatibilidade retroativa com useFeeAgroStore', () => {
     expect(useFeeAgroStore).toBe(useAgroFinanceStore);
   });

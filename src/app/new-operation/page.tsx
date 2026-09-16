@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import MainLayout from '../components/layout/MainLayout';
@@ -52,7 +52,7 @@ export default function NewOperationPage() {
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     setValue,
     formState: { errors },
   } = useForm<OperationFormValues>({
@@ -92,10 +92,10 @@ export default function NewOperationPage() {
     }
   }, [portfolio.assets, account.ownerName, setValue]);
 
-  const operationType = watch('type');
-  const currentAmountStr = watch('amount');
-  const selectedAssetId = watch('assetId');
-  const selectedWarehouse = watch('warehouse');
+  const operationType = useWatch({ control, name: 'type' });
+  const currentAmountStr = useWatch({ control, name: 'amount' });
+  const selectedAssetId = useWatch({ control, name: 'assetId' });
+  const selectedWarehouse = useWatch({ control, name: 'warehouse' });
 
   const selectedAsset = useMemo(() => {
     return (
