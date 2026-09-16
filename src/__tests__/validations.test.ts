@@ -91,4 +91,44 @@ describe('createOperationSchema - Validações de Regras de Negócio', () => {
       expect(result.error.issues.some(i => i.message.includes('mínimo 11 caracteres'))).toBe(true);
     }
   });
+
+  it('deve aprovar venda RWA válida e reprovar quando não selecionar o ativo', () => {
+    const rwaSchema = createOperationSchema(50000);
+    
+    // Sem ativo selecionado deve falhar
+    const invalidSale = {
+      type: 'sell_rwa' as const,
+      amount: '5.000,00',
+    };
+    expect(rwaSchema.safeParse(invalidSale).success).toBe(false);
+
+    // Com ativo selecionado deve passar
+    const validSale = {
+      type: 'sell_rwa' as const,
+      assetId: 'RWA-SOJA-001',
+      amount: '5.000,00',
+    };
+    expect(rwaSchema.safeParse(validSale).success).toBe(true);
+  });
+
+  it('deve validar resgate físico exigindo ativo e armazém credenciado', () => {
+    const rwaSchema = createOperationSchema(50000);
+
+    // Sem armazém deve falhar
+    const noWarehouse = {
+      type: 'redeem_rwa' as const,
+      assetId: 'RWA-MILHO-001',
+      amount: '3.000,00',
+    };
+    expect(rwaSchema.safeParse(noWarehouse).success).toBe(false);
+
+    // Com ativo e armazém deve passar
+    const validRedeem = {
+      type: 'redeem_rwa' as const,
+      assetId: 'RWA-MILHO-001',
+      amount: '3.000,00',
+      warehouse: 'Silo Central Cooperativa Agro SP',
+    };
+    expect(rwaSchema.safeParse(validRedeem).success).toBe(true);
+  });
 });

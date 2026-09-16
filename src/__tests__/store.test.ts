@@ -105,6 +105,76 @@ describe('useAgroFinanceStore - Gerenciamento de Estado e Reatividade', () => {
     expect(useAgroFinanceStore.getState().transactions.length).toBe(mockTransactions.length);
   });
 
+  it('deve vender tokens RWA a mercado, debitar custódia e creditar saldo em conta', () => {
+    const initialBalance = useAgroFinanceStore.getState().account.availableBalance;
+    const targetAssetId = 'RWA-SOJA-001';
+    const initialAsset = useAgroFinanceStore.getState().portfolio.assets.find(a => a.assetId === targetAssetId)!;
+    const initialQuantity = initialAsset.quantity;
+
+    // Vender 250 tokens (250 * 48.50 = 12.125,00)
+    const result = useAgroFinanceStore.getState().executeOperation({
+      type: 'sell_rwa',
+      assetId: targetAssetId,
+      amount: '12.125,00',
+      tokens: 250,
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.transaction?.category).toBe('rwa_sale');
+    expect(result.transaction?.type).toBe('IN');
+    expect(result.transaction?.amount).toBe(12125);
+
+    const updatedState = useAgroFinanceStore.getState();
+    expect(updatedState.account.availableBalance).toBe(Number((initialBalance + 12125).toFixed(2)));
+
+    const updatedAsset = updatedState.portfolio.assets.find(a => a.assetId === targetAssetId)!;
+    expect(updatedAsset.quantity).toBe(initialQuantity - 250);
+  });
+
+  it('deve recusar venda RWA quando a quantidade solicitada exceder a custódia disponível', () => {
+    const targetAssetId = 'RWA-SOJA-001';
+    const initialAsset = useAgroFinanceStore.getState().portfolio.assets.find(a => a.assetId === targetAssetId)!;
+
+    const result = useAgroFinanceStore.getState().executeOperation({
+      type: 'sell_rwa',
+      assetId: targetAssetId,
+      amount: '999.999,00',
+      tokens: initialAsset.quantity + 500,
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('insuficiente');
+  });
+
+  it('deve resgatar fisicamente commodities (burn de tokens), debitar custódia sem alterar saldo financeiro', () => {
+    const initialBalance = useAgroFinanceStore.getState().account.availableBalance;
+    const targetAssetId = 'RWA-MILHO-001';
+    const initialAsset = useAgroFinanceStore.getState().portfolio.assets.find(a => a.assetId === targetAssetId)!;
+    const initialQuantity = initialAsset.quantity;
+
+    // Resgate físico de 500 sacas em armazém credenciado
+    const warehouse = 'Silo Central Cooperativa Agro SP - Sorriso';
+    const result = useAgroFinanceStore.getState().executeOperation({
+      type: 'redeem_rwa',
+      assetId: targetAssetId,
+      amount: (500 * initialAsset.pricePerToken).toString(),
+      tokens: 500,
+      warehouse,
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.transaction?.category).toBe('rwa_redemption');
+    expect(result.transaction?.type).toBe('OUT');
+    expect(result.transaction?.toAddress).toBe(warehouse);
+
+    const updatedState = useAgroFinanceStore.getState();
+    // Saldo em dinheiro permanece inalterado pois houve retirada física de mercadoria
+    expect(updatedState.account.availableBalance).toBe(initialBalance);
+
+    const updatedAsset = updatedState.portfolio.assets.find(a => a.assetId === targetAssetId)!;
+    expect(updatedAsset.quantity).toBe(initialQuantity - 500);
+  });
+
   it('deve gerenciar estado de tema (light, dark, system)', () => {
     // Padrão do mock ou inicial
     expect(['light', 'dark', 'system']).toContain(useAgroFinanceStore.getState().theme);

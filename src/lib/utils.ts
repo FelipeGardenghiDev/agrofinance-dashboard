@@ -148,6 +148,8 @@ export const translateCategory = (category: string): string => {
     withdrawal: 'Resgate',
     dividend: 'Dividendo',
     fee: 'Taxa',
+    rwa_sale: 'Venda RWA',
+    rwa_redemption: 'Resgate Físico',
   };
   return translations[category] || category;
 };

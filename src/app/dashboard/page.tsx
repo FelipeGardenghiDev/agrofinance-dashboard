@@ -165,13 +165,30 @@ export default function DashboardPage() {
                           {formatPerformance(asset.performance24h)}
                         </span>
                       </td>
-                      <td className="py-4 px-4 text-center">
-                        <Link
-                          href={`/new-operation?asset=${asset.assetId}`}
-                          className="inline-flex items-center text-xs font-semibold px-2.5 py-1 bg-agro-azul-escuro text-white rounded hover:bg-agro-azul transition-colors cursor-pointer"
-                        >
-                          Aportar +
-                        </Link>
+                      <td className="py-4 px-4 text-center whitespace-nowrap">
+                        <div className="flex items-center justify-center gap-1.5">
+                          <Link
+                            href={`/new-operation?type=investment_rwa&asset=${asset.assetId}`}
+                            title="Aportar mais tokens"
+                            className="inline-flex items-center text-xs font-semibold px-2 py-1 bg-agro-azul-escuro text-white rounded-md hover:bg-agro-azul active:scale-95 transition-all cursor-pointer shadow-xs"
+                          >
+                            + Aportar
+                          </Link>
+                          <Link
+                            href={`/new-operation?type=sell_rwa&asset=${asset.assetId}`}
+                            title="Vender tokens e creditar em saldo"
+                            className="inline-flex items-center text-xs font-semibold px-2 py-1 bg-green-700 hover:bg-green-800 text-white rounded-md active:scale-95 transition-all cursor-pointer shadow-xs"
+                          >
+                            Vender
+                          </Link>
+                          <Link
+                            href={`/new-operation?type=redeem_rwa&asset=${asset.assetId}`}
+                            title="Resgatar sacas físicas em armazém credenciado"
+                            className="inline-flex items-center text-xs font-semibold px-2 py-1 bg-amber-700 hover:bg-amber-800 text-white rounded-md active:scale-95 transition-all cursor-pointer shadow-xs"
+                          >
+                            Resgatar
+                          </Link>
+                        </div>
                       </td>
                     </tr>
                   ))}

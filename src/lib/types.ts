@@ -52,7 +52,9 @@ export type TransactionCategory =
   | 'investment' 
   | 'withdrawal' 
   | 'dividend' 
-  | 'fee';
+  | 'fee'
+  | 'rwa_sale'
+  | 'rwa_redemption';
 
 export interface Transaction {
   id: string;
@@ -69,15 +71,26 @@ export interface Transaction {
   memo?: string;
 }
 
+// ==================== ARMAZÉNS CREDENCIADOS (RESGATE FÍSICO) ====================
+export interface Warehouse {
+  id: string;
+  name: string;
+  city: string;
+  state: string;
+  capacity: string;
+}
+
 // ==================== OPERAÇÕES (NOVA TRANSAÇÃO) ====================
-export type OperationType = 'pix' | 'ted' | 'investment_rwa';
+export type OperationType = 'pix' | 'ted' | 'investment_rwa' | 'sell_rwa' | 'redeem_rwa';
 
 export interface Operation {
   type: OperationType;
-  beneficiary: string; // CPF, chave PIX, ou wallet address
+  beneficiary: string; // CPF, chave PIX, armazém ou wallet address
   amount: number;
   memo?: string;
-  assetId?: string; // para investimentos em RWA
+  assetId?: string; // para operações com tokens RWA
+  tokens?: number; // quantidade de tokens envolvidos
+  warehouse?: string; // armazém credenciado no resgate físico
   network?: string; // para operações blockchain
 }
 
@@ -87,6 +100,8 @@ export interface OperationFormData {
   amount: string; // string no form, number depois
   memo?: string;
   assetId?: string;
+  tokens?: number;
+  warehouse?: string;
 }
 
 // ==================== FILTROS ====================

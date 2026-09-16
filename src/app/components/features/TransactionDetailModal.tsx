@@ -132,6 +132,32 @@ const TransactionDetailModal = ({ transaction, onClose }: TransactionDetailModal
               <p className="text-blue-950 dark:text-blue-200 font-mono text-xs break-all">{transaction.txHash}</p>
             </div>
           )}
+
+          {/* Banner de Resgate Físico */}
+          {transaction.category === 'rwa_redemption' && (
+            <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-xl p-4 text-xs space-y-1.5">
+              <p className="font-bold text-amber-900 dark:text-amber-200 flex items-center gap-1.5">
+                <span>🚜</span>
+                <span>Certificado de Resgate Físico Emitido (CDA / WA)</span>
+              </p>
+              <p className="text-amber-800 dark:text-amber-300">
+                Esta operação executou o burn dos tokens e emitiu o direito de retirada física da commodity no armazém credenciado. Apresente este comprovante e o código da transação para liberação da carga.
+              </p>
+            </div>
+          )}
+
+          {/* Banner de Venda RWA */}
+          {transaction.category === 'rwa_sale' && (
+            <div className="bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-800 rounded-xl p-4 text-xs space-y-1.5">
+              <p className="font-bold text-green-900 dark:text-green-200 flex items-center gap-1.5">
+                <span>💵</span>
+                <span>Liquidação Financeira RWA Concluída</span>
+              </p>
+              <p className="text-green-800 dark:text-green-300">
+                Os tokens foram liquidados a mercado e o valor em moeda corrente foi integralmente creditado no saldo disponível da sua conta.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Footer */}

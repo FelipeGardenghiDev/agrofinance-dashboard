@@ -63,6 +63,152 @@ export const useAgroFinanceStore = create<AgroFinanceStore>()(
           return { success: false, error: 'O valor deve ser maior que zero.' };
         }
 
+        // ==================== OPERAÇÃO DE VENDA RWA ====================
+        if (data.type === 'sell_rwa') {
+          if (!data.assetId) {
+            return { success: false, error: 'Selecione o ativo RWA para venda.' };
+          }
+
+          const targetAsset = state.portfolio.assets.find((a) => a.assetId === data.assetId);
+          if (!targetAsset) {
+            return { success: false, error: 'Ativo RWA não encontrado no portfólio.' };
+          }
+
+          const tokensToSell =
+            data.tokens && data.tokens > 0
+              ? data.tokens
+              : Math.min(targetAsset.quantity, Math.round(amount / targetAsset.pricePerToken));
+
+          if (tokensToSell <= 0 || tokensToSell > targetAsset.quantity) {
+            return {
+              success: false,
+              error: `Quantidade de tokens insuficiente (custódia atual: ${targetAsset.quantity} tokens).`,
+            };
+          }
+
+          const saleValue = Number((tokensToSell * targetAsset.pricePerToken).toFixed(2));
+          const newAvailableBalance = Number((state.account.availableBalance + saleValue).toFixed(2));
+
+          const updatedAssets: RWAAsset[] = state.portfolio.assets.map((asset) => {
+            if (asset.assetId === data.assetId) {
+              const newQuantity = asset.quantity - tokensToSell;
+              const newTotalValue = Number((newQuantity * asset.pricePerToken).toFixed(2));
+              return {
+                ...asset,
+                quantity: newQuantity,
+                totalValue: newTotalValue,
+                lastUpdate: new Date().toISOString(),
+              };
+            }
+            return asset;
+          });
+
+          const totalPortfolioValue = updatedAssets.reduce((sum, a) => sum + a.totalValue, 0);
+          const updatedPortfolio = {
+            assets: updatedAssets,
+            totalValue: Number(totalPortfolioValue.toFixed(2)),
+          };
+
+          const newTransaction: Transaction = {
+            id: `TRX-${Date.now().toString().slice(-5)}`,
+            date: new Date().toISOString(),
+            description: `Venda de Tokens RWA - ${targetAsset.assetName}`,
+            type: 'IN',
+            category: 'rwa_sale',
+            amount: saleValue,
+            status: 'completed',
+            fromAddress: `Custódia RWA (${targetAsset.tokenSymbol})`,
+            toAddress: `${state.account.ownerName} (Saldo em Conta)`,
+            memo:
+              data.memo?.trim() ||
+              `Venda liquidada: ${tokensToSell.toLocaleString('pt-BR')} tokens a ${targetAsset.pricePerToken.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}/token`,
+            txHash: `0x${Math.random().toString(16).substring(2, 6)}...${Math.random().toString(16).substring(2, 6)}`,
+          };
+
+          set({
+            account: {
+              ...state.account,
+              availableBalance: newAvailableBalance,
+            },
+            portfolio: updatedPortfolio,
+            transactions: [newTransaction, ...state.transactions],
+          });
+
+          return { success: true, transaction: newTransaction };
+        }
+
+        // ==================== OPERAÇÃO DE RESGATE FÍSICO RWA ====================
+        if (data.type === 'redeem_rwa') {
+          if (!data.assetId) {
+            return { success: false, error: 'Selecione o ativo RWA para resgate físico.' };
+          }
+
+          const targetAsset = state.portfolio.assets.find((a) => a.assetId === data.assetId);
+          if (!targetAsset) {
+            return { success: false, error: 'Ativo RWA não encontrado no portfólio.' };
+          }
+
+          const tokensToRedeem =
+            data.tokens && data.tokens > 0
+              ? data.tokens
+              : Math.min(targetAsset.quantity, Math.round(amount / targetAsset.pricePerToken));
+
+          if (tokensToRedeem <= 0 || tokensToRedeem > targetAsset.quantity) {
+            return {
+              success: false,
+              error: `Quantidade de sacas/tokens para resgate inválida ou insuficiente (disponível: ${targetAsset.quantity} tokens).`,
+            };
+          }
+
+          const redemptionValue = Number((tokensToRedeem * targetAsset.pricePerToken).toFixed(2));
+
+          const updatedAssets: RWAAsset[] = state.portfolio.assets.map((asset) => {
+            if (asset.assetId === data.assetId) {
+              const newQuantity = asset.quantity - tokensToRedeem;
+              const newTotalValue = Number((newQuantity * asset.pricePerToken).toFixed(2));
+              return {
+                ...asset,
+                quantity: newQuantity,
+                totalValue: newTotalValue,
+                lastUpdate: new Date().toISOString(),
+              };
+            }
+            return asset;
+          });
+
+          const totalPortfolioValue = updatedAssets.reduce((sum, a) => sum + a.totalValue, 0);
+          const updatedPortfolio = {
+            assets: updatedAssets,
+            totalValue: Number(totalPortfolioValue.toFixed(2)),
+          };
+
+          const warehouseName = data.warehouse || 'Armazém Geral Credenciado';
+
+          const newTransaction: Transaction = {
+            id: `TRX-${Date.now().toString().slice(-5)}`,
+            date: new Date().toISOString(),
+            description: `Resgate Físico de Grãos - ${targetAsset.assetName}`,
+            type: 'OUT',
+            category: 'rwa_redemption',
+            amount: redemptionValue,
+            status: 'completed',
+            fromAddress: `Burn Smart Contract (${targetAsset.tokenSymbol})`,
+            toAddress: warehouseName,
+            memo:
+              data.memo?.trim() ||
+              `Certificado CDA/WA: ${tokensToRedeem.toLocaleString('pt-BR')} sacas liberadas para carregamento em ${warehouseName}`,
+            txHash: `0x${Math.random().toString(16).substring(2, 6)}...${Math.random().toString(16).substring(2, 6)}`,
+          };
+
+          set({
+            portfolio: updatedPortfolio,
+            transactions: [newTransaction, ...state.transactions],
+          });
+
+          return { success: true, transaction: newTransaction };
+        }
+
+        // ==================== OPERAÇÕES FINANCEIRAS DE DÉBITO (PIX, TED, APORTE) ====================
         if (amount > state.account.availableBalance) {
           return { success: false, error: 'Saldo insuficiente para realizar esta operação.' };
         }
@@ -75,11 +221,11 @@ export const useAgroFinanceStore = create<AgroFinanceStore>()(
         let assetName = '';
 
         if (data.type === 'investment_rwa' && data.assetId) {
-          const targetAsset = state.portfolio.assets.find(a => a.assetId === data.assetId);
+          const targetAsset = state.portfolio.assets.find((a) => a.assetId === data.assetId);
           if (targetAsset) {
             assetName = targetAsset.assetName;
             const tokensBought = Math.round(amount / targetAsset.pricePerToken);
-            const updatedAssets: RWAAsset[] = state.portfolio.assets.map(asset => {
+            const updatedAssets: RWAAsset[] = state.portfolio.assets.map((asset) => {
               if (asset.assetId === data.assetId) {
                 const newQuantity = asset.quantity + tokensBought;
                 const newTotalValue = Number((newQuantity * asset.pricePerToken).toFixed(2));
@@ -117,7 +263,7 @@ export const useAgroFinanceStore = create<AgroFinanceStore>()(
           status: 'completed',
           toAddress: data.beneficiary,
           memo: data.memo?.trim() || undefined,
-          fee: data.type === 'ted' ? 18.90 : 0,
+          fee: data.type === 'ted' ? 18.9 : 0,
           txHash: `0x${Math.random().toString(16).substring(2, 6)}...${Math.random().toString(16).substring(2, 6)}`,
         };
 

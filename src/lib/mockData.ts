@@ -4,7 +4,8 @@ import type {
   RWAAsset, 
   KYC, 
   Transaction, 
-  AppData 
+  AppData,
+  Warehouse
 } from './types';
 
 // ==================== CONTA ====================
@@ -280,3 +281,35 @@ export const getFilteredTransactions = (
 export const getAssetById = (assetId: string): RWAAsset | undefined => {
   return mockRWAAssets.find(asset => asset.assetId === assetId);
 };
+
+// ==================== ARMAZÉNS CREDENCIADOS PARA RESGATE FÍSICO ====================
+export const mockWarehouses: Warehouse[] = [
+  {
+    id: 'wh-sorriso',
+    name: 'Silo Central Cooperativa Agro SP - Sorriso',
+    city: 'Sorriso',
+    state: 'MT',
+    capacity: '120.000 ton',
+  },
+  {
+    id: 'wh-bebedouro',
+    name: 'Terminal Graneleiro Bebedouro Agro RWA',
+    city: 'Bebedouro',
+    state: 'SP',
+    capacity: '85.000 ton',
+  },
+  {
+    id: 'wh-rioverde',
+    name: 'Armazém Geral RWA Cerrado Verde',
+    city: 'Rio Verde',
+    state: 'GO',
+    capacity: '95.000 ton',
+  },
+  {
+    id: 'wh-santos',
+    name: 'Terminal Portuário Graneleiro Exportação',
+    city: 'Santos',
+    state: 'SP',
+    capacity: '150.000 ton',
+  },
+];
