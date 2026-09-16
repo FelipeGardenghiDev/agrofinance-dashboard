@@ -177,6 +177,16 @@ pnpm test
 
 ---
 
+## 🗺️ Roadmap & Próximas Evoluções
+
+As especificações detalhadas das próximas etapas planejadas para o projeto estão documentadas em [ROADMAP.md](ROADMAP.md):
+1. **Testes End-to-End (E2E) com Playwright:** Cobertura de ponta a ponta dos fluxos de crédito/CPR, toasts e operações bancárias.
+2. **Módulo de Hedge Cambial & Derivativos Agro:** Fixação de preço futuro de commodities (Opções Put e NDF cambial) integrados à B3/CBOT.
+3. **Streaming de Cotações Vivas (SSE):** Atualizações reativas de cotações de grãos e moedas.
+4. **PWA & Operação Offline:** Aplicativo instalável para uso do produtor rural em campo.
+
+---
+
 ## 🚀 Como Executar Localmente
 
 ### Pré-requisitos
