@@ -6,7 +6,7 @@
 ![React](https://img.shields.io/badge/React-19.2.3-blue?style=flat-square&logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue?style=flat-square&logo=typescript)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-38bdf8?style=flat-square&logo=tailwind-css)
-![Vitest](https://img.shields.io/badge/Vitest-48_Passing-729B1B?style=flat-square&logo=vitest)
+![Vitest](https://img.shields.io/badge/Vitest-56_Passing-729B1B?style=flat-square&logo=vitest)
 ![Zustand](https://img.shields.io/badge/State-Zustand_Persist-orange?style=flat-square)
 ![Zod](https://img.shields.io/badge/Schema-Zod_v4-3068b7?style=flat-square)
 
@@ -63,13 +63,31 @@ O **AgroFinance** entrega uma interface de internet banking corporativo que cons
 * **Ordenação Bidirecional:** Ordenação clicável por data de movimentação ou por valor financeiro.
 * **Modal de Detalhes Acessível:** Comprovante completo com hash de blockchain, fechamento por `Esc` e banners para certificados de resgate e liquidação RWA.
 
-### 🔔 5. Central de Alertas & Notificações RWA
-* **Notificações Reativas em Tempo Real:** Disparadas instantaneamente a cada operação financeira (PIX, TED), aporte RWA, liquidação a mercado ou resgate físico com emissão de certificado.
+### 🌾 6. Módulo de Crédito Rural & CPR Digital (Cédula de Produto Rural)
+* **Empréstimo com Colateral RWA:** Financiamento de capital de giro e insumos agrícolas lastreado na própria safra tokenizada em custódia (Soja e Milho).
+* **Simulação Financeira Precisa (Tabela Price):** Cálculo de parcelas mensais, juros pré-fixados de 1.2% ao mês e valor total com encargos.
+* **Política Prudencial de LTV (Loan-to-Value):** Trava automática em até 70% do valor de mercado dos grãos oferecidos em garantia.
+* **Bloqueio e Desbloqueio de Tokens (*Token Lock*):** Sacas dadas em garantia são travadas no store, impedindo venda simultânea ou resgate físico no armazém.
+* **Emissão & Registro de CPR:** Geração automática do número de registro regulatório da Cédula (ex: `CPR-2026-SOJA-...`), data de emissão e vencimento.
+* **Quitação Antecipada Integrada:** Liquidação do saldo devedor com débito em conta corrente e destravamento automático e integral das commodities em carteira.
+
+### 🔔 7. Central de Alertas & Notificações RWA
+* **Notificações Reativas em Tempo Real:** Disparadas instantaneamente a cada operação financeira (PIX, TED), aporte RWA, liquidação a mercado, resgate físico com emissão de certificado ou contratação/quitação de CPR.
 * **Alertas do Agronegócio:** Notificações semente para oscilações de cotações na B3/CBOT (+2.3% Soja), autorização de carregamento em silos (Sorriso/MT) e conformidade cadastral (KYC Bacen).
 * **Filtros e Gestão:** Abas de filtragem (*Todas*, *Não lidas*, *🌾 RWA & Grãos*), marcar individualmente ou todas como lidas, exclusão pontual ou limpeza completa.
 * **Badging e Acessibilidade:** Badge com contagem de não lidas e animação de pulso, dropdown com suporte a teclado (`Escape`) e fechamento ao clicar fora.
 
-### 🔄 6. Ferramenta de Demonstração (Reset State)
+### 🍞 8. Sistema Global de Feedback por Toasts Acessíveis
+* **Notificações Flutuantes Não Intrusivas:** Sistema reativo alimentado via Zustand Store com suporte a múltiplos toasts simultâneos e auto-dismiss em 4 segundos.
+* **Acessibilidade W3C:** Container ancorado com `role="status"` e `aria-live="polite"`, permitindo que usuários com tecnologia assistiva ouçam o resultado de transações sem perda de foco.
+* **Categorias Semânticas:** Estilos para `success` (verde agro), `error` (rubro), `warning` (âmbar) e `info` (azul celeste).
+
+### 🛡️ 9. Resiliência de Aplicação (App Router Skeletons & Error Boundary)
+* **Loading Skeleton Global (`loading.tsx`):** Estrutura animada com CSS pulse renderizada durante a navegação inicial e transições pesadas, cobrindo Header, cards de KPI, gráficos e tabelas.
+* **Error Boundary de Raiz (`error.tsx`):** Captura erros de renderização e estado de forma elegante, impedindo o crash da aplicação e provendo botão de recuperação (*Tentar Novamente*).
+* **Página 404 Personalizada (`not-found.tsx`):** Interface temática do agronegócio com redirecionamento intuitivo de volta ao Dashboard executivo.
+
+### 🔄 10. Ferramenta de Demonstração (Reset State)
 * Botão **"Restaurar Demo"** no Header: permite aos avaliadores técnicos realizarem quantas operações desejarem e resetar os dados ao estado inicial com 1 clique.
 
 ---
@@ -86,19 +104,25 @@ agrofinance-dashboard/
 │   │   ├── dashboard/                # Painel principal consolidado com Analytics
 │   │   ├── transactions/             # Extrato detalhado com filtros e ordenação
 │   │   ├── new-operation/            # Formulário reativo de transferência/investimento
+│   │   ├── credit/                   # Módulo de Crédito Rural & CPR com colateral RWA
+│   │   ├── loading.tsx               # Skeleton screens de carregamento inicial
+│   │   ├── error.tsx                 # Error boundary global com recuperação
+│   │   ├── not-found.tsx             # Página 404 personalizada
 │   │   ├── components/               # Camada de Componentes
-│   │   │   ├── ui/                   # Design System atômico (Button, Card, Badge, Input, Spinner, ThemeToggle)
+│   │   │   ├── ui/                   # Design System atômico (Button, Card, Badge, Input, Spinner, ThemeToggle, ToastContainer)
 │   │   │   ├── layout/               # Header com rotas ativas e MainLayout responsivo
 │   │   │   └── features/             # Componentes de negócio (TransactionFilters, DetailModal, Charts, NotificationCenter)
 │   ├── lib/
-│   │   ├── store.ts                  # Zustand Store com middleware persist (localStorage)
+│   │   ├── store.ts                  # Zustand Store com middleware persist (localStorage) e partialize
 │   │   ├── validations.ts            # Schemas Zod dinâmicos (createOperationSchema)
-│   │   ├── types.ts                  # Contratos de tipagem TypeScript estritos
-│   │   ├── utils.ts                  # Formatadores de moeda BRL, datas e ordenadores
-│   │   └── mockData.ts               # Dados semente realistas do agronegócio
+│   │   ├── types.ts                  # Contratos de tipagem TypeScript estritos (RWA, CPR, Toasts)
+│   │   ├── utils.ts                  # Formatadores BRL, Tabela Price e cálculo de LTV de CPR
+│   │   └── mockData.ts               # Dados semente realistas do agronegócio e contratos CPR
 │   └── __tests__/                    # Suíte de Testes Automatizados (Vitest)
 │       ├── validations.test.ts       # Testes unitários das regras de negócio do Zod
 │       ├── store.test.ts             # Testes de mutação de estado e liquidação
+│       ├── credit.test.ts            # Testes do motor de simulação e quitação de CPR
+│       ├── ToastContainer.test.tsx   # Testes de acessibilidade e ciclo de vida dos Toasts
 │       ├── utils.test.ts             # Testes de formatação monetária e helpers
 │       ├── TransactionFilters.test.tsx # Teste de integração de filtros
 │       ├── charts.test.tsx           # Testes dos componentes de gráficos interativos
@@ -111,40 +135,45 @@ agrofinance-dashboard/
 ### Principais Decisões:
 * **Next.js 16 + React 19:** Utilização de compilação Turbopack para performance extrema e pré-renderização estática de páginas.
 * **Gráficos SVG Nativos sem Bloatware:** Implementação de gráficos vetoriais interativos sob medida, mantendo o bundle minúsculo, 100% responsivo e livre de problemas de hidratação SSR.
-* **Zustand com Persistência Segura:** Em vez de manter estados locais efêmeros, o estado financeiro persiste em `localStorage` através de um store tipado, garantindo coerência entre diferentes telas sem mismatch de hidratação.
+* **Zustand com Persistência Segura & Partialize:** Em vez de manter estados locais efêmeros, o estado financeiro e de contratos de CPR persiste em `localStorage` através de um store tipado, isolando estados transientes (como toasts efêmeros) via `partialize`.
 * **Validação Dinâmica de Limites com Zod:** O schema de validação recebe dinamicamente o saldo em conta como parâmetro, assegurando que o usuário não transfira mais do que possui, mesmo após múltiplas transações sequenciais.
-* **Acessibilidade (a11y):** Modais com foco retido, tratamento de tecla `Escape`, contraste visual validado e semântica de formulários acessíveis por leitores de tela.
+* **Mecânica de Trava de Colateral (Token Lock):** No módulo de crédito, o sistema garante prudência bancária ao travar as sacas de commodities dadas em garantia, impedindo dupla alienação enquanto a CPR estiver ativa.
+* **Acessibilidade (a11y):** Modais com foco retido, tratamento de tecla `Escape`, contraste visual validado, `aria-live` em notificações toast e semântica de formulários acessíveis por leitores de tela.
 
 ---
 
 ## 🧪 Suíte de Testes Automatizados (Vitest + Testing Library)
 
-O projeto conta com **48 testes automatizados** cobrindo regras de negócio críticas:
+O projeto conta com **56 testes automatizados** cobrindo regras de negócio críticas:
 
 ```bash
 pnpm test
 ```
 
 ```text
- ✓ src/__tests__/validations.test.ts (9 tests)
  ✓ src/__tests__/utils.test.ts (9 tests)
  ✓ src/__tests__/store.test.ts (13 tests)
+ ✓ src/__tests__/ToastContainer.test.tsx (3 tests)
  ✓ src/__tests__/ThemeToggle.test.tsx (4 tests)
  ✓ src/__tests__/charts.test.tsx (4 tests)
  ✓ src/__tests__/TransactionFilters.test.tsx (3 tests)
  ✓ src/__tests__/NotificationCenter.test.tsx (6 tests)
+ ✓ src/__tests__/credit.test.ts (5 tests)
+ ✓ src/__tests__/validations.test.ts (9 tests)
 
- Test Files  7 passed (7)
-      Tests  48 passed (48)
+ Test Files  9 passed (9)
+      Tests  56 passed (56)
 ```
 
 ### O que os testes cobrem:
 1. **Regras de Negócio Financeiras & RWA:** Validações de limites de saldo em dinheiro, limites de custódia de tokens, bloqueio de valores negativos/zero e obrigatoriedade de armazém credenciado para resgate físico.
-2. **Mutação de Estado & Liquidação:** Débito/crédito de saldo, compra de tokens, venda a mercado, queima (*burn*) de tokens no resgate físico e persistência do tema.
-3. **Central de Notificações & Alertas:** Renderização de badge com contagem de não lidas, abertura/fechamento por teclado (`Esc`), alternância de filtros (*Todas*, *Não lidas*, *RWA*), marcar individual ou todas como lidas, remoção e limpeza total.
-4. **Alternância de Tema (Dark Mode):** Renderização acessível, abertura/fechamento por teclado (`Esc`), seleção e alteração do tema no store.
-5. **Helpers de Formatação & CSV:** Validação de conversão de moeda (`R$ 1.250,50`), datas relativas, mascaramento de CPF, truncamento de hashes e geração de CSV estruturado com BOM UTF-8.
-6. **Interatividade de Interface & Gráficos:** Renderização de filtros, alteração de tipos, busca textual dinâmica e comportamento do gráfico Donut e histórico.
+2. **Motor de Crédito Rural & CPR Digital:** Validação de cálculo de amortização (Tabela Price), limites de LTV (70%), trava de tokens em colateral, débito de quitação antecipada e liberação de garantias.
+3. **Sistema de Feedback Toast:** Renderização com atributos acessíveis (`role="status"`, `aria-live="polite"`), auto-dismiss e botão de remoção manual.
+4. **Mutação de Estado & Liquidação:** Débito/crédito de saldo, compra de tokens, venda a mercado, queima (*burn*) de tokens no resgate físico e persistência do tema.
+5. **Central de Notificações & Alertas:** Renderização de badge com contagem de não lidas, abertura/fechamento por teclado (`Esc`), alternância de filtros (*Todas*, *Não lidas*, *RWA*), marcar individual ou todas como lidas, remoção e limpeza total.
+6. **Alternância de Tema (Dark Mode):** Renderização acessível, abertura/fechamento por teclado (`Esc`), seleção e alteração do tema no store.
+7. **Helpers de Formatação & CSV:** Validação de conversão de moeda (`R$ 1.250,50`), datas relativas, mascaramento de CPF, truncamento de hashes e geração de CSV estruturado com BOM UTF-8.
+8. **Interatividade de Interface & Gráficos:** Renderização de filtros, alteração de tipos, busca textual dinâmica e comportamento do gráfico Donut e histórico.
 
 ---
 

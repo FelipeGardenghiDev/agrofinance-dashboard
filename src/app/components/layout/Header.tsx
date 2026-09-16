@@ -52,6 +52,9 @@ const Header = () => {
             <NavLink href="/transactions" active={pathname === '/transactions'}>
               Transações
             </NavLink>
+            <NavLink href="/credit" active={pathname === '/credit'}>
+              Crédito & CPR
+            </NavLink>
             <NavLink href="/new-operation" active={pathname === '/new-operation'}>
               Nova Operação
             </NavLink>
@@ -127,6 +130,13 @@ const Header = () => {
               onClick={() => setMobileMenuOpen(false)}
             >
               Transações
+            </MobileNavLink>
+            <MobileNavLink
+              href="/credit"
+              active={pathname === '/credit'}
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Crédito & CPR
             </MobileNavLink>
             <MobileNavLink
               href="/new-operation"

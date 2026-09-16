@@ -1,6 +1,6 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import type { Transaction } from './types';
+import type { Transaction, RWAAsset } from './types';
 
 // Utility para merge de classes Tailwind
 
@@ -290,4 +290,98 @@ export const downloadCSV = (content: string, filename: string) => {
   link.click();
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
+};
+
+// ==================== CÁLCULO FINANCEIRO - CPR DIGITAL (CRÉDITO RURAL) ====================
+
+export interface CPRSimulationResult {
+  requestedAmount: number;
+  termMonths: number;
+  annualRate: number; // ex: 11.5
+  monthlyRate: number; // taxa equivalente mensal
+  monthlyPayment: number; // parcela Price
+  totalRepayment: number;
+  totalInterest: number;
+  maxLtv: number; // percentual (ex: 70)
+  requiredCollateralValue: number;
+  requiredTokens: number;
+  availableTokens: number;
+  isEligible: boolean;
+  effectiveLtv: number;
+}
+
+export const calculateCPRSimulation = (
+  requestedAmount: number,
+  termMonths: number,
+  asset: RWAAsset,
+  annualRate: number = 11.5,
+  maxLtv: number = 0.70
+): CPRSimulationResult => {
+  const safeAmount = Math.max(0, requestedAmount);
+  const safeMonths = Math.max(1, termMonths);
+
+  // Taxa mensal equivalente a partir da taxa anual (juros compostos): (1 + ia)^(1/12) - 1
+  const decimalAnnual = annualRate / 100;
+  const monthlyRate = Math.pow(1 + decimalAnnual, 1 / 12) - 1;
+
+  // Fórmula Price para cálculo da parcela fixa: PMT = PV * [i * (1 + i)^n] / [(1 + i)^n - 1]
+  const factor = Math.pow(1 + monthlyRate, safeMonths);
+  const monthlyPayment =
+    safeAmount > 0
+      ? Number(((safeAmount * (monthlyRate * factor)) / (factor - 1)).toFixed(2))
+      : 0;
+
+  const totalRepayment = Number((monthlyPayment * safeMonths).toFixed(2));
+  const totalInterest = Number(Math.max(0, totalRepayment - safeAmount).toFixed(2));
+
+  // Garantia RWA necessária: Valor do Empréstimo / LTV Máximo
+  const requiredCollateralValue = Number((safeAmount / maxLtv).toFixed(2));
+  const requiredTokens = Math.ceil(requiredCollateralValue / (asset.pricePerToken || 1));
+  const availableTokens = Math.max(0, asset.quantity - (asset.lockedQuantity || 0));
+  const isEligible = safeAmount > 0 && availableTokens >= requiredTokens;
+  const actualCollateralValue = requiredTokens * asset.pricePerToken;
+  const effectiveLtv =
+    actualCollateralValue > 0
+      ? Number(((safeAmount / actualCollateralValue) * 100).toFixed(1))
+      : 0;
+
+  return {
+    requestedAmount: safeAmount,
+    termMonths: safeMonths,
+    annualRate,
+    monthlyRate,
+    monthlyPayment,
+    totalRepayment,
+    totalInterest,
+    maxLtv: maxLtv * 100,
+    requiredCollateralValue,
+    requiredTokens,
+    availableTokens,
+    isEligible,
+    effectiveLtv,
+  };
+};
+
+// Copia texto com fallback robusto
+export const copyToClipboard = async (text: string): Promise<boolean> => {
+  if (typeof window === 'undefined') return false;
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } else {
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-999999px';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      const successful = document.execCommand('copy');
+      document.body.removeChild(textArea);
+      return successful;
+    }
+  } catch {
+    return false;
+  }
 };

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import MainLayout from '../components/layout/MainLayout';
 import Card from '../components/ui/Card';
 import Badge from '../components/ui/Badge';
@@ -17,6 +17,19 @@ export default function DashboardPage() {
   const portfolio = useAgroFinanceStore((state) => state.portfolio);
   const kyc = useAgroFinanceStore((state) => state.kyc);
   const transactions = useAgroFinanceStore((state) => state.transactions);
+  const cprContracts = useAgroFinanceStore((state) => state.cprContracts || []);
+
+  const activeCPRs = useMemo(() => {
+    return cprContracts.filter((c) => c.status === 'active');
+  }, [cprContracts]);
+
+  const totalCPRAmount = useMemo(() => {
+    return activeCPRs.reduce((sum, c) => sum + c.amount, 0);
+  }, [activeCPRs]);
+
+  const totalCPRLockedSacas = useMemo(() => {
+    return activeCPRs.reduce((sum, c) => sum + c.collateralQuantity, 0);
+  }, [activeCPRs]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -49,19 +62,19 @@ export default function DashboardPage() {
         </div>
 
         {/* Cards de Resumo */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {/* Saldo Disponível */}
           <Card hover>
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">Saldo Disponível</p>
-                <h3 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mt-2">
+                <p className="text-xs text-gray-600 dark:text-gray-400 font-medium">Saldo Disponível</p>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">
                   {formatCurrency(account?.availableBalance || 0)}
                 </h3>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">Conta: {account?.accountId}</p>
+                <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-1.5">Conta: {account?.accountId}</p>
               </div>
-              <div className="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
-                <span className="text-2xl">💰</span>
+              <div className="w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-xl flex items-center justify-center">
+                <span className="text-xl">💰</span>
               </div>
             </div>
           </Card>
@@ -70,34 +83,57 @@ export default function DashboardPage() {
           <Card hover>
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">Portfolio RWA</p>
-                <h3 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mt-2">
+                <p className="text-xs text-gray-600 dark:text-gray-400 font-medium">Custódia RWA</p>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">
                   {formatCurrency(portfolio?.totalValue || 0)}
                 </h3>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">{portfolio?.assets.length} ativos</p>
+                <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-1.5">{portfolio?.assets.length} commodities ativas</p>
               </div>
-              <div className="w-12 h-12 bg-agro-azul-claro/20 dark:bg-agro-azul-claro/30 rounded-full flex items-center justify-center">
-                <span className="text-2xl">🌾</span>
+              <div className="w-10 h-10 bg-agro-azul-claro/20 dark:bg-agro-azul-claro/30 rounded-xl flex items-center justify-center">
+                <span className="text-xl">🌾</span>
               </div>
             </div>
           </Card>
+
+          {/* Crédito & CPR */}
+          <Link href="/credit" className="block group">
+            <Card hover className="h-full border-l-4 border-l-agro-azul-escuro dark:border-l-blue-500">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-xs text-gray-600 dark:text-gray-400 font-medium flex items-center gap-1">
+                    Crédito Rural CPR
+                    <span className="text-[10px] text-agro-azul-escuro dark:text-blue-400 group-hover:translate-x-0.5 transition-transform">→</span>
+                  </p>
+                  <h3 className="text-2xl font-bold text-agro-azul-escuro dark:text-blue-400 mt-1">
+                    {totalCPRAmount > 0 ? formatCurrency(totalCPRAmount) : 'Disponível'}
+                  </h3>
+                  <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-1.5">
+                    {totalCPRLockedSacas > 0 ? `${totalCPRLockedSacas} sacas em garantia` : 'Simular empréstimo'}
+                  </p>
+                </div>
+                <div className="w-10 h-10 bg-agro-azul-escuro/10 dark:bg-blue-500/20 rounded-xl flex items-center justify-center text-agro-azul-escuro dark:text-blue-300">
+                  <span className="text-xl">📜</span>
+                </div>
+              </div>
+            </Card>
+          </Link>
 
           {/* Status KYC */}
           <Card hover>
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">Status KYC</p>
-                <div className="mt-3">
+                <p className="text-xs text-gray-600 dark:text-gray-400 font-medium">Compliance & KYC</p>
+                <div className="mt-2">
                   <Badge variant={kyc?.status === 'approved' ? 'success' : 'warning'}>
                     {translateStatus(kyc?.status || 'pending')}
                   </Badge>
                 </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">
-                  Documentos: {kyc?.documents.cpf && kyc?.documents.proofOfAddress && kyc?.documents.selfie ? 'Completos' : 'Pendentes'}
+                <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-2">
+                  {kyc?.documents.cpf && kyc?.documents.proofOfAddress && kyc?.documents.selfie ? 'Produtor Verificado' : 'Docs Pendentes'}
                 </p>
               </div>
-              <div className="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
-                <span className="text-2xl">✅</span>
+              <div className="w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-xl flex items-center justify-center">
+                <span className="text-xl">✅</span>
               </div>
             </div>
           </Card>
@@ -119,23 +155,20 @@ export default function DashboardPage() {
         {/* Ativos RWA */}
         <div>
           <div className="flex items-center justify-between mb-4">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Seus Ativos RWA</h2>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Custódia digital de commodities agrícolas</p>
-            </div>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">Custódia de Commodities RWA</h2>
             <Link
               href="/new-operation"
-              className="text-xs font-semibold px-3 py-1.5 bg-agro-azul-escuro text-white rounded-lg hover:bg-agro-azul transition-colors flex items-center gap-1.5 shadow-xs"
+              className="text-sm font-semibold text-agro-verde-musgo hover:underline cursor-pointer"
             >
-              <span>+</span> Novo Aporte
+              Comprar mais sacas →
             </Link>
           </div>
           
-          <Card>
+          <Card className="overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-gray-200 dark:border-gray-800">
+                  <tr className="border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/60">
                     <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Ativo</th>
                     <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Token</th>
                     <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Quantidade</th>
@@ -157,7 +190,16 @@ export default function DashboardPage() {
                       <td className="py-4 px-4">
                         <Badge variant="default">{asset.tokenSymbol}</Badge>
                       </td>
-                      <td className="py-4 px-4 text-right text-gray-900 dark:text-gray-100">{asset.quantity.toLocaleString('pt-BR')}</td>
+                      <td className="py-4 px-4 text-right text-gray-900 dark:text-gray-100">
+                        <div>
+                          <p className="font-medium">{asset.quantity.toLocaleString('pt-BR')}</p>
+                          {Boolean(asset.lockedQuantity && asset.lockedQuantity > 0) && (
+                            <span className="inline-block text-[10px] font-semibold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-1.5 py-0.2 rounded border border-amber-500/20">
+                              🔒 {asset.lockedQuantity} em CPR
+                            </span>
+                          )}
+                        </div>
+                      </td>
                       <td className="py-4 px-4 text-right text-gray-900 dark:text-gray-100">{formatCurrency(asset.pricePerToken)}</td>
                       <td className="py-4 px-4 text-right font-semibold text-gray-900 dark:text-gray-100">{formatCurrency(asset.totalValue)}</td>
                       <td className="py-4 px-4 text-right">

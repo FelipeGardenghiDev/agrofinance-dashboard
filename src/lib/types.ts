@@ -17,7 +17,8 @@ export interface RWAAsset {
   assetName: string;
   assetType: AssetType;
   tokenSymbol: string;
-  quantity: number; // quantidade de tokens
+  quantity: number; // quantidade total de tokens
+  lockedQuantity?: number; // quantidade bloqueada em garantia (CPR)
   pricePerToken: number; // preço em BRL por token
   totalValue: number; // quantity * pricePerToken
   lastUpdate: string;
@@ -138,6 +139,49 @@ export interface AppNotification {
   actionLabel?: string;
 }
 
+// ==================== TOAST & FEEDBACK UX ====================
+export type ToastType = 'success' | 'error' | 'info' | 'warning';
+
+export interface ToastMessage {
+  id: string;
+  type: ToastType;
+  title: string;
+  message?: string;
+  duration?: number; // ms
+}
+
+// ==================== CRÉDITO RURAL & CPR DIGITAL ====================
+export interface CPRContract {
+  id: string;
+  contractNumber: string; // ex: CPR-2026-0042
+  borrowerName: string;
+  amount: number; // Valor financiado concedido (R$)
+  collateralAssetId: string;
+  collateralQuantity: number; // Quantidade de sacas/tokens retidos em garantia
+  collateralValue: number; // Valor de mercado da garantia no momento da contratação
+  ltv: number; // Percentual Loan-to-Value (ex: 60%)
+  interestRateAnnual: number; // Taxa de juros anual (ex: 11.5%)
+  termMonths: number; // 6, 12 ou 24 meses
+  monthlyPayment: number; // Valor estimado da parcela
+  totalRepayment: number; // Montante total a pagar com juros
+  status: 'active' | 'settled' | 'defaulted';
+  createdAt: string; // ISO
+  dueDate: string; // ISO
+  cprHash: string; // Hash de registro em cartório / B3
+}
+
+export interface CreditSimulation {
+  requestedAmount: number;
+  termMonths: number;
+  assetId: string;
+  ltv: number;
+  monthlyPayment: number;
+  totalInterest: number;
+  totalRepayment: number;
+  requiredTokens: number;
+  interestRateAnnual: number;
+}
+
 // ==================== DADOS DA APLICAÇÃO ====================
 export interface AppData {
   account: Account;
@@ -145,6 +189,7 @@ export interface AppData {
   kyc: KYC;
   transactions: Transaction[];
   notifications: AppNotification[];
+  cprContracts: CPRContract[];
 }
 
 // ==================== TEMA ====================

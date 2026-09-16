@@ -1,4 +1,5 @@
 import Header from './Header';
+import ToastContainer from '../ui/ToastContainer';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -11,6 +12,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {children}
       </main>
+      <ToastContainer />
     </div>
   );
 };

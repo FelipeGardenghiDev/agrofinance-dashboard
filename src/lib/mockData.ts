@@ -6,7 +6,8 @@ import type {
   Transaction, 
   AppData,
   Warehouse,
-  AppNotification
+  AppNotification,
+  CPRContract
 } from './types';
 
 // ==================== CONTA ====================
@@ -26,6 +27,7 @@ export const mockRWAAssets: RWAAsset[] = [
     assetType: 'SOJA',
     tokenSymbol: 'SOJA24',
     quantity: 1250, // tokens
+    lockedQuantity: 0,
     pricePerToken: 48.50, // R$ por token
     totalValue: 60625.00, // 1250 * 48.50
     lastUpdate: new Date().toISOString(),
@@ -37,6 +39,7 @@ export const mockRWAAssets: RWAAsset[] = [
     assetType: 'SOJA',
     tokenSymbol: 'SOJAO',
     quantity: 800,
+    lockedQuantity: 300,
     pricePerToken: 52.75,
     totalValue: 42200.00,
     lastUpdate: new Date().toISOString(),
@@ -275,6 +278,28 @@ export const mockNotifications: AppNotification[] = [
   },
 ];
 
+// ==================== CRÉDITO RURAL & CONTRATOS CPR ====================
+export const mockCPRContracts: CPRContract[] = [
+  {
+    id: 'CPR-2026-001',
+    contractNumber: 'CPR-2026-001',
+    borrowerName: 'João Silva Santos',
+    amount: 10000.00,
+    collateralAssetId: 'RWA-SOJA-002',
+    collateralQuantity: 300,
+    collateralValue: 15825.00, // 300 * 52.75
+    ltv: 63.2,
+    interestRateAnnual: 11.5,
+    termMonths: 12,
+    monthlyPayment: 886.15,
+    totalRepayment: 10633.80,
+    status: 'active',
+    createdAt: '2026-01-25T10:00:00Z',
+    dueDate: '2027-01-25T10:00:00Z',
+    cprHash: '0x9c3f...7b1a',
+  },
+];
+
 // ==================== DADOS CONSOLIDADOS ====================
 export const mockAppData: AppData = {
   account: mockAccount,
@@ -282,6 +307,7 @@ export const mockAppData: AppData = {
   kyc: mockKYC,
   transactions: mockTransactions,
   notifications: mockNotifications,
+  cprContracts: mockCPRContracts,
 };
 
 // ==================== HELPERS ====================

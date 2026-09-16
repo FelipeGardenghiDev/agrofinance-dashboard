@@ -1,9 +1,27 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import type { Account, Portfolio, KYC, Transaction, RWAAsset, ThemeMode, AppNotification } from './types';
+import type { 
+  Account, 
+  Portfolio, 
+  KYC, 
+  Transaction, 
+  RWAAsset, 
+  ThemeMode, 
+  AppNotification, 
+  ToastMessage, 
+  CPRContract 
+} from './types';
 import type { OperationFormValues } from './validations';
-import { mockAccount, mockPortfolio, mockKYC, mockTransactions, mockRWAAssets, mockNotifications } from './mockData';
-import { parseAmount } from './utils';
+import { 
+  mockAccount, 
+  mockPortfolio, 
+  mockKYC, 
+  mockTransactions, 
+  mockRWAAssets, 
+  mockNotifications, 
+  mockCPRContracts 
+} from './mockData';
+import { parseAmount, calculateCPRSimulation } from './utils';
 
 export const applyThemeToDocument = (theme: ThemeMode) => {
   if (typeof window === 'undefined') return;
@@ -25,6 +43,8 @@ export interface AgroFinanceStore {
   kyc: KYC;
   transactions: Transaction[];
   notifications: AppNotification[];
+  toasts: ToastMessage[];
+  cprContracts: CPRContract[];
   theme: ThemeMode;
   isHydrated: boolean;
   setIsHydrated: (val: boolean) => void;
@@ -42,6 +62,14 @@ export interface AgroFinanceStore {
   deleteNotification: (id: string) => void;
   clearAllNotifications: () => void;
   addNotification: (notification: Omit<AppNotification, 'id' | 'timestamp' | 'read'> & { id?: string; timestamp?: string; read?: boolean }) => void;
+
+  // Ações de Feedback / Toast Global
+  addToast: (toast: Omit<ToastMessage, 'id'>) => string;
+  removeToast: (id: string) => void;
+
+  // Ações de Crédito Rural / CPR com Garantia RWA
+  requestCPR: (data: { amount: number; termMonths: number; assetId: string }) => { success: boolean; error?: string; contract?: CPRContract };
+  settleCPR: (contractId: string) => { success: boolean; error?: string };
 }
 
 export type FeeAgroStore = AgroFinanceStore;
@@ -54,6 +82,8 @@ export const useAgroFinanceStore = create<AgroFinanceStore>()(
       kyc: mockKYC,
       transactions: mockTransactions,
       notifications: mockNotifications,
+      toasts: [] as ToastMessage[],
+      cprContracts: mockCPRContracts,
       theme: 'system' as ThemeMode,
       isHydrated: false,
 
@@ -384,6 +414,8 @@ export const useAgroFinanceStore = create<AgroFinanceStore>()(
           kyc: { ...mockKYC },
           transactions: [...mockTransactions],
           notifications: [...mockNotifications],
+          toasts: [],
+          cprContracts: [...mockCPRContracts],
         });
         if (typeof window !== 'undefined') {
           try {
@@ -434,6 +466,231 @@ export const useAgroFinanceStore = create<AgroFinanceStore>()(
         }));
       },
 
+      // ==================== TOAST ACTIONS ====================
+      addToast: (toast) => {
+        const id = `TOAST-${Date.now().toString().slice(-6)}-${Math.random().toString(36).substring(2, 5)}`;
+        const duration = toast.duration ?? 4000;
+        const newToast: ToastMessage = {
+          id,
+          type: toast.type,
+          title: toast.title,
+          message: toast.message,
+          duration,
+        };
+
+        set((state) => ({
+          toasts: [...state.toasts, newToast],
+        }));
+
+        if (duration > 0 && typeof window !== 'undefined') {
+          setTimeout(() => {
+            get().removeToast(id);
+          }, duration);
+        }
+
+        return id;
+      },
+
+      removeToast: (id: string) => {
+        set((state) => ({
+          toasts: state.toasts.filter((t) => t.id !== id),
+        }));
+      },
+
+      // ==================== CPR & CRÉDITO RURAL ACTIONS ====================
+      requestCPR: ({ amount, termMonths, assetId }) => {
+        const state = get();
+        if (amount <= 0) {
+          return { success: false, error: 'O valor do crédito deve ser maior que zero.' };
+        }
+        if (![6, 12, 24].includes(termMonths)) {
+          return { success: false, error: 'Prazo de pagamento inválido (escolha 6, 12 ou 24 meses).' };
+        }
+
+        const targetAsset = state.portfolio.assets.find((a) => a.assetId === assetId);
+        if (!targetAsset) {
+          return { success: false, error: 'Ativo de garantia RWA não encontrado no portfólio.' };
+        }
+
+        const simulation = calculateCPRSimulation(amount, termMonths, targetAsset);
+        if (!simulation.isEligible) {
+          return {
+            success: false,
+            error: `Garantia insuficiente em carteira. São necessários ${simulation.requiredTokens.toLocaleString('pt-BR')} tokens como colateral, mas você possui ${simulation.availableTokens.toLocaleString('pt-BR')} disponíveis.`,
+          };
+        }
+
+        // Bloqueia os tokens em garantia
+        const updatedAssets: RWAAsset[] = state.portfolio.assets.map((asset) => {
+          if (asset.assetId === assetId) {
+            const currentLocked = asset.lockedQuantity || 0;
+            return {
+              ...asset,
+              lockedQuantity: currentLocked + simulation.requiredTokens,
+            };
+          }
+          return asset;
+        });
+
+        // Credita valor em conta corrente
+        const newAvailableBalance = Number((state.account.availableBalance + amount).toFixed(2));
+
+        const contractNumber = `CPR-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+        const contractId = `CPR-${Date.now().toString().slice(-6)}`;
+
+        const newContract: CPRContract = {
+          id: contractId,
+          contractNumber,
+          borrowerName: state.account.ownerName,
+          amount,
+          collateralAssetId: assetId,
+          collateralQuantity: simulation.requiredTokens,
+          collateralValue: Number((simulation.requiredTokens * targetAsset.pricePerToken).toFixed(2)),
+          ltv: simulation.effectiveLtv,
+          interestRateAnnual: simulation.annualRate,
+          termMonths,
+          monthlyPayment: simulation.monthlyPayment,
+          totalRepayment: simulation.totalRepayment,
+          status: 'active',
+          createdAt: new Date().toISOString(),
+          dueDate: new Date(Date.now() + termMonths * 30 * 24 * 60 * 60 * 1000).toISOString(),
+          cprHash: `0x${Math.random().toString(16).substring(2, 6)}...${Math.random().toString(16).substring(2, 6)}`,
+        };
+
+        const newTx: Transaction = {
+          id: `TRX-${Date.now().toString().slice(-5)}`,
+          date: new Date().toISOString(),
+          description: `Desembolso Crédito Rural CPR - ${targetAsset.assetName}`,
+          type: 'IN',
+          category: 'investment',
+          amount,
+          status: 'completed',
+          fromAddress: 'Fundo Garantidor Agro RWA',
+          toAddress: `${state.account.ownerName} (Conta Corrente)`,
+          memo: `Cédula ${contractNumber} registrada. Garantia: ${simulation.requiredTokens.toLocaleString('pt-BR')} tokens retidos.`,
+          txHash: newContract.cprHash,
+        };
+
+        const cprNotif: AppNotification = {
+          id: `NOTIF-${Date.now().toString().slice(-6)}`,
+          title: 'Crédito CPR Liberado em Conta',
+          message: `Empréstimo de ${amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} liberado. ${simulation.requiredTokens.toLocaleString('pt-BR')} sacas vinculadas em garantia.`,
+          timestamp: new Date().toISOString(),
+          type: 'operation',
+          priority: 'high',
+          read: false,
+          actionUrl: '/credit',
+          actionLabel: 'Ver CPR',
+        };
+
+        set({
+          account: {
+            ...state.account,
+            availableBalance: newAvailableBalance,
+          },
+          portfolio: {
+            ...state.portfolio,
+            assets: updatedAssets,
+          },
+          transactions: [newTx, ...state.transactions],
+          notifications: [cprNotif, ...state.notifications],
+          cprContracts: [newContract, ...state.cprContracts],
+        });
+
+        get().addToast({
+          type: 'success',
+          title: 'Crédito CPR Concedido!',
+          message: `${amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} creditados no seu saldo disponível.`,
+        });
+
+        return { success: true, contract: newContract };
+      },
+
+      settleCPR: (contractId: string) => {
+        const state = get();
+        const contract = state.cprContracts.find((c) => c.id === contractId);
+        if (!contract) {
+          return { success: false, error: 'Contrato de CPR não encontrado.' };
+        }
+        if (contract.status !== 'active') {
+          return { success: false, error: 'Este contrato de CPR já foi liquidado.' };
+        }
+
+        const payoffAmount = contract.totalRepayment;
+        if (payoffAmount > state.account.availableBalance) {
+          return {
+            success: false,
+            error: `Saldo insuficiente para quitação (necessário ${payoffAmount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}).`,
+          };
+        }
+
+        // Desbloqueia os tokens
+        const updatedAssets: RWAAsset[] = state.portfolio.assets.map((asset) => {
+          if (asset.assetId === contract.collateralAssetId) {
+            const currentLocked = asset.lockedQuantity || 0;
+            return {
+              ...asset,
+              lockedQuantity: Math.max(0, currentLocked - contract.collateralQuantity),
+            };
+          }
+          return asset;
+        });
+
+        const newAvailableBalance = Number((state.account.availableBalance - payoffAmount).toFixed(2));
+
+        const updatedContracts: CPRContract[] = state.cprContracts.map((c) =>
+          c.id === contractId ? { ...c, status: 'settled' } : c
+        );
+
+        const newTx: Transaction = {
+          id: `TRX-${Date.now().toString().slice(-5)}`,
+          date: new Date().toISOString(),
+          description: `Quitação de Cédula Rural CPR #${contract.contractNumber}`,
+          type: 'OUT',
+          category: 'withdrawal',
+          amount: payoffAmount,
+          status: 'completed',
+          fromAddress: `${state.account.ownerName} (Conta Corrente)`,
+          toAddress: 'Fundo Garantidor Agro RWA',
+          memo: `Quitação integral. ${contract.collateralQuantity.toLocaleString('pt-BR')} sacas liberadas da garantia.`,
+          txHash: `0x${Math.random().toString(16).substring(2, 6)}...${Math.random().toString(16).substring(2, 6)}`,
+        };
+
+        const settleNotif: AppNotification = {
+          id: `NOTIF-${Date.now().toString().slice(-6)}`,
+          title: 'CPR Liquidada & Garantia Liberada',
+          message: `Contrato ${contract.contractNumber} quitado. ${contract.collateralQuantity.toLocaleString('pt-BR')} sacas foram desbloqueadas para negociação.`,
+          timestamp: new Date().toISOString(),
+          type: 'operation',
+          priority: 'medium',
+          read: false,
+          actionUrl: '/credit',
+          actionLabel: 'Ver Histórico',
+        };
+
+        set({
+          account: {
+            ...state.account,
+            availableBalance: newAvailableBalance,
+          },
+          portfolio: {
+            ...state.portfolio,
+            assets: updatedAssets,
+          },
+          transactions: [newTx, ...state.transactions],
+          notifications: [settleNotif, ...state.notifications],
+          cprContracts: updatedContracts,
+        });
+
+        get().addToast({
+          type: 'success',
+          title: 'CPR Liquidada com Sucesso!',
+          message: `${contract.collateralQuantity.toLocaleString('pt-BR')} tokens liberados da garantia.`,
+        });
+
+        return { success: true };
+      },
+
       getFilteredTransactions: (filters: { type?: string; status?: string; searchTerm?: string }) => {
         const { transactions } = get();
         let filtered = [...transactions];
@@ -461,6 +718,15 @@ export const useAgroFinanceStore = create<AgroFinanceStore>()(
     {
       name: 'agrofinance-storage-v1',
       storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({
+        account: state.account,
+        portfolio: state.portfolio,
+        kyc: state.kyc,
+        transactions: state.transactions,
+        notifications: state.notifications,
+        cprContracts: state.cprContracts,
+        theme: state.theme,
+      }),
       onRehydrateStorage: () => (state) => {
         state?.setIsHydrated(true);
         if (state?.theme) {

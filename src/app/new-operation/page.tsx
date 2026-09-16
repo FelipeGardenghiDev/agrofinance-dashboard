@@ -44,6 +44,7 @@ export default function NewOperationPage() {
   const account = useAgroFinanceStore((state) => state.account);
   const portfolio = useAgroFinanceStore((state) => state.portfolio);
   const executeOperation = useAgroFinanceStore((state) => state.executeOperation);
+  const addToast = useAgroFinanceStore((state) => state.addToast);
 
   const schema = useMemo(() => {
     return createOperationSchema(account.availableBalance, portfolio.assets);
@@ -190,8 +191,18 @@ export default function NewOperationPage() {
     if (result.success && result.transaction) {
       setExecutedTx(result.transaction);
       setStep('success');
+      addToast({
+        type: 'success',
+        title: 'Operação Concluída!',
+        message: `${result.transaction.description} realizada com sucesso.`,
+      });
     } else {
       setExecutionError(result.error || 'Erro ao processar a operação.');
+      addToast({
+        type: 'error',
+        title: 'Falha na Operação',
+        message: result.error || 'Erro ao processar a operação.',
+      });
     }
   };
 
