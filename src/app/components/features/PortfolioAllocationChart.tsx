@@ -55,16 +55,16 @@ export default function PortfolioAllocationChart({
     <Card hover={false} className="h-full flex flex-col justify-between">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h3 className="text-lg font-bold text-gray-900">Alocação de Ativos RWA</h3>
-          <p className="text-xs text-gray-500">Distribuição patrimonial em commodities</p>
+          <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">Alocação de Ativos RWA</h3>
+          <p className="text-xs text-gray-500 dark:text-gray-400">Distribuição patrimonial em commodities</p>
         </div>
-        <span className="text-xs font-semibold px-2.5 py-1 bg-agro-azul-escuro/10 text-agro-azul-escuro rounded-full">
+        <span className="text-xs font-semibold px-2.5 py-1 bg-agro-azul-escuro/10 dark:bg-agro-azul-escuro/40 text-agro-azul-escuro dark:text-blue-300 rounded-full">
           {assets.length} ativos
         </span>
       </div>
 
       {chartData.length === 0 ? (
-        <div className="h-64 flex items-center justify-center text-sm text-gray-400">
+        <div className="h-64 flex items-center justify-center text-sm text-gray-400 dark:text-gray-500">
           Nenhum ativo sob custódia para exibir
         </div>
       ) : (
@@ -82,7 +82,7 @@ export default function PortfolioAllocationChart({
                 cy="100"
                 r={radius}
                 fill="transparent"
-                stroke="#E5E7EB"
+                className="stroke-gray-200 dark:stroke-gray-800"
                 strokeWidth={strokeWidth}
               />
 
@@ -127,22 +127,22 @@ export default function PortfolioAllocationChart({
                   >
                     {activeAsset.tokenSymbol}
                   </span>
-                  <p className="text-base font-extrabold text-gray-900 leading-tight">
+                  <p className="text-base font-extrabold text-gray-900 dark:text-gray-100 leading-tight">
                     {formatCurrency(activeAsset.totalValue)}
                   </p>
-                  <p className="text-xs font-semibold text-gray-500 mt-0.5">
+                  <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mt-0.5">
                     {activeAsset.percentage}% da carteira
                   </p>
                 </div>
               ) : (
                 <div>
-                  <p className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">
+                  <p className="text-[11px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Total Custódia
                   </p>
-                  <p className="text-lg font-black text-gray-900 leading-tight mt-0.5">
+                  <p className="text-lg font-black text-gray-900 dark:text-gray-100 leading-tight mt-0.5">
                     {formatCurrency(totalValue)}
                   </p>
-                  <p className="text-[10px] text-gray-400 mt-0.5">Passe o mouse na fatia</p>
+                  <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">Passe o mouse na fatia</p>
                 </div>
               )}
             </div>
@@ -157,8 +157,8 @@ export default function PortfolioAllocationChart({
                   key={item.assetId}
                   className={`flex items-center justify-between p-2 rounded-lg cursor-pointer transition-all border ${
                     isSelected
-                      ? 'bg-gray-50 border-gray-300 shadow-xs'
-                      : 'border-transparent hover:bg-gray-50/70'
+                      ? 'bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-700 shadow-xs'
+                      : 'border-transparent hover:bg-gray-50/70 dark:hover:bg-gray-800/50'
                   }`}
                   onMouseEnter={() => setActiveAssetId(item.assetId)}
                   onMouseLeave={() => setActiveAssetId(null)}
@@ -172,18 +172,18 @@ export default function PortfolioAllocationChart({
                       style={{ backgroundColor: item.color }}
                     />
                     <div className="truncate">
-                      <p className="text-xs font-bold text-gray-900 truncate">
+                      <p className="text-xs font-bold text-gray-900 dark:text-gray-100 truncate">
                         {item.tokenSymbol}
                       </p>
-                      <p className="text-[10px] text-gray-500 truncate">{item.assetName}</p>
+                      <p className="text-[10px] text-gray-500 dark:text-gray-400 truncate">{item.assetName}</p>
                     </div>
                   </div>
 
                   <div className="text-right flex-shrink-0 ml-2">
-                    <span className="text-xs font-semibold text-gray-900">
+                    <span className="text-xs font-semibold text-gray-900 dark:text-gray-100">
                       {item.percentage}%
                     </span>
-                    <p className="text-[10px] text-gray-500">{formatCurrency(item.totalValue)}</p>
+                    <p className="text-[10px] text-gray-500 dark:text-gray-400">{formatCurrency(item.totalValue)}</p>
                   </div>
                 </div>
               );

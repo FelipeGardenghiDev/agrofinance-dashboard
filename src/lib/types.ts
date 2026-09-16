@@ -114,3 +114,6 @@ export interface AppData {
   kyc: KYC;
   transactions: Transaction[];
 }
+
+// ==================== TEMA ====================
+export type ThemeMode = 'light' | 'dark' | 'system';

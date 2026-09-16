@@ -1,19 +1,35 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import type { Account, Portfolio, KYC, Transaction, RWAAsset } from './types';
+import type { Account, Portfolio, KYC, Transaction, RWAAsset, ThemeMode } from './types';
 import type { OperationFormValues } from './validations';
 import { mockAccount, mockPortfolio, mockKYC, mockTransactions, mockRWAAssets } from './mockData';
 import { parseAmount } from './utils';
+
+export const applyThemeToDocument = (theme: ThemeMode) => {
+  if (typeof window === 'undefined') return;
+  const isDark =
+    theme === 'dark' ||
+    (theme === 'system' &&
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-color-scheme: dark)').matches);
+  if (isDark) {
+    document.documentElement.classList.add('dark');
+  } else {
+    document.documentElement.classList.remove('dark');
+  }
+};
 
 export interface AgroFinanceStore {
   account: Account;
   portfolio: Portfolio;
   kyc: KYC;
   transactions: Transaction[];
+  theme: ThemeMode;
   isHydrated: boolean;
   setIsHydrated: (val: boolean) => void;
   
   // Ações de Negócio
+  setTheme: (theme: ThemeMode) => void;
   executeOperation: (data: OperationFormValues) => { success: boolean; error?: string; transaction?: Transaction };
   resetToDefaultData: () => void;
   addDeposit: (amount: number, description?: string) => void;
@@ -29,9 +45,15 @@ export const useAgroFinanceStore = create<AgroFinanceStore>()(
       portfolio: mockPortfolio,
       kyc: mockKYC,
       transactions: mockTransactions,
+      theme: 'system' as ThemeMode,
       isHydrated: false,
 
       setIsHydrated: (val: boolean) => set({ isHydrated: val }),
+
+      setTheme: (theme: ThemeMode) => {
+        set({ theme });
+        applyThemeToDocument(theme);
+      },
 
       executeOperation: (data: OperationFormValues) => {
         const state = get();
@@ -185,6 +207,9 @@ export const useAgroFinanceStore = create<AgroFinanceStore>()(
       storage: createJSONStorage(() => localStorage),
       onRehydrateStorage: () => (state) => {
         state?.setIsHydrated(true);
+        if (state?.theme) {
+          applyThemeToDocument(state.theme);
+        }
       },
     }
   )

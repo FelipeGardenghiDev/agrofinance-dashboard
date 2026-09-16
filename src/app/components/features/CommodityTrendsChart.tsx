@@ -162,8 +162,8 @@ export default function CommodityTrendsChart() {
       {/* Top Header & Seletor de Ativos */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
         <div>
-          <h3 className="text-lg font-bold text-gray-900">Evolução & Cotações Históricas</h3>
-          <p className="text-xs text-gray-500">
+          <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">Evolução & Cotações Históricas</h3>
+          <p className="text-xs text-gray-500 dark:text-gray-400">
             Desempenho nos últimos 6 meses com liquidação tokenizada
           </p>
         </div>
@@ -183,7 +183,7 @@ export default function CommodityTrendsChart() {
                 className={`text-xs px-2.5 py-1 rounded-md font-semibold transition-colors cursor-pointer whitespace-nowrap ${
                   isActive
                     ? 'bg-agro-azul-escuro text-white shadow-xs'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
                 }`}
               >
                 {s.tokenSymbol}
@@ -194,19 +194,19 @@ export default function CommodityTrendsChart() {
       </div>
 
       {/* Mini KPIs da série */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-gray-50/80 p-3 rounded-lg border border-gray-100 mb-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-gray-50/80 dark:bg-gray-800/60 p-3 rounded-lg border border-gray-100 dark:border-gray-800 mb-4">
         <div>
-          <p className="text-[11px] text-gray-500 font-medium">Cotação / Valor Atual</p>
-          <p className="text-sm sm:text-base font-extrabold text-gray-900 mt-0.5">
+          <p className="text-[11px] text-gray-500 dark:text-gray-400 font-medium">Cotação / Valor Atual</p>
+          <p className="text-sm sm:text-base font-extrabold text-gray-900 dark:text-gray-100 mt-0.5">
             {formatCurrency(stats.last)}
           </p>
         </div>
 
         <div>
-          <p className="text-[11px] text-gray-500 font-medium">Variação no Semestre</p>
+          <p className="text-[11px] text-gray-500 dark:text-gray-400 font-medium">Variação no Semestre</p>
           <p
             className={`text-sm sm:text-base font-extrabold mt-0.5 ${
-              stats.change >= 0 ? 'text-green-600' : 'text-red-600'
+              stats.change >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
             }`}
           >
             {stats.change >= 0 ? '+' : ''}
@@ -215,15 +215,15 @@ export default function CommodityTrendsChart() {
         </div>
 
         <div>
-          <p className="text-[11px] text-gray-500 font-medium">Mínima (6M)</p>
-          <p className="text-sm sm:text-base font-semibold text-gray-700 mt-0.5">
+          <p className="text-[11px] text-gray-500 dark:text-gray-400 font-medium">Mínima (6M)</p>
+          <p className="text-sm sm:text-base font-semibold text-gray-700 dark:text-gray-200 mt-0.5">
             {formatCurrency(stats.min)}
           </p>
         </div>
 
         <div>
-          <p className="text-[11px] text-gray-500 font-medium">Máxima (6M)</p>
-          <p className="text-sm sm:text-base font-semibold text-gray-700 mt-0.5">
+          <p className="text-[11px] text-gray-500 dark:text-gray-400 font-medium">Máxima (6M)</p>
+          <p className="text-sm sm:text-base font-semibold text-gray-700 dark:text-gray-200 mt-0.5">
             {formatCurrency(stats.max)}
           </p>
         </div>
@@ -253,7 +253,7 @@ export default function CommodityTrendsChart() {
                 y1={y}
                 x2={width - paddingX}
                 y2={y}
-                stroke="#E5E7EB"
+                className="stroke-gray-200 dark:stroke-gray-800"
                 strokeDasharray="4 4"
                 strokeWidth="1"
               />
@@ -305,10 +305,9 @@ export default function CommodityTrendsChart() {
                   cx={pt.x}
                   cy={pt.y}
                   r={isHovered ? 6 : 4}
-                  fill="#FFFFFF"
+                  className="fill-white dark:fill-gray-900 transition-all duration-150"
                   stroke={currentSeries.color}
                   strokeWidth={isHovered ? 3 : 2}
-                  className="transition-all duration-150"
                   pointerEvents="none"
                 />
                 {/* Rótulo do Eixo X (Mês) */}
@@ -317,7 +316,7 @@ export default function CommodityTrendsChart() {
                   y={height - 12}
                   textAnchor="middle"
                   className={`text-[11px] font-medium transition-colors ${
-                    isHovered ? 'fill-gray-900 font-bold' : 'fill-gray-400'
+                    isHovered ? 'fill-gray-900 dark:fill-gray-100 font-bold' : 'fill-gray-400 dark:fill-gray-500'
                   }`}
                 >
                   {pt.month}
@@ -330,7 +329,7 @@ export default function CommodityTrendsChart() {
         {/* Tooltip Flutuante Interativo */}
         {activePoint && (
           <div
-            className="absolute top-2 bg-gray-900/95 text-white text-xs px-3 py-1.5 rounded-lg shadow-lg pointer-events-none transition-all transform -translate-x-1/2 flex items-center gap-2 border border-gray-700"
+            className="absolute top-2 bg-gray-900/95 dark:bg-gray-800/95 text-white text-xs px-3 py-1.5 rounded-lg shadow-lg pointer-events-none transition-all transform -translate-x-1/2 flex items-center gap-2 border border-gray-700 dark:border-gray-600"
             style={{
               left: `${(activePoint.x / width) * 100}%`,
             }}

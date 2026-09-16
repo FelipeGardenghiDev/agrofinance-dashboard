@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAgroFinanceStore } from '@/lib/store';
 import { formatCurrency } from '@/lib/utils';
+import ThemeToggle from '@/app/components/ui/ThemeToggle';
 
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -56,7 +57,10 @@ const Header = () => {
           </nav>
 
           {/* User Menu & Reset Demo Action */}
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden md:flex items-center space-x-3">
+            {/* Theme Toggle */}
+            <ThemeToggle />
+
             {/* Botão de reset para recrutadores */}
             <button
               onClick={handleReset}
@@ -131,16 +135,19 @@ const Header = () => {
               <p className="text-sm font-semibold text-white">{account.ownerName}</p>
               <p className="text-xs text-green-300">{formatCurrency(account.availableBalance)}</p>
             </div>
-            <button
-              onClick={() => {
-                handleReset();
-                setMobileMenuOpen(false);
-              }}
-              className="text-xs px-3 py-1.5 rounded-lg border border-white/30 text-white hover:bg-white/10 active:scale-95 transition-all cursor-pointer flex items-center gap-1.5"
-            >
-              <span>🔄</span>
-              <span>Restaurar Demo</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+              <button
+                onClick={() => {
+                  handleReset();
+                  setMobileMenuOpen(false);
+                }}
+                className="text-xs px-3 py-1.5 rounded-lg border border-white/30 text-white hover:bg-white/10 active:scale-95 transition-all cursor-pointer flex items-center gap-1.5"
+              >
+                <span>🔄</span>
+                <span>Restaurar Demo</span>
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -105,6 +105,20 @@ describe('useAgroFinanceStore - Gerenciamento de Estado e Reatividade', () => {
     expect(useAgroFinanceStore.getState().transactions.length).toBe(mockTransactions.length);
   });
 
+  it('deve gerenciar estado de tema (light, dark, system)', () => {
+    // Padrão do mock ou inicial
+    expect(['light', 'dark', 'system']).toContain(useAgroFinanceStore.getState().theme);
+
+    useAgroFinanceStore.getState().setTheme('dark');
+    expect(useAgroFinanceStore.getState().theme).toBe('dark');
+
+    useAgroFinanceStore.getState().setTheme('light');
+    expect(useAgroFinanceStore.getState().theme).toBe('light');
+
+    useAgroFinanceStore.getState().setTheme('system');
+    expect(useAgroFinanceStore.getState().theme).toBe('system');
+  });
+
   it('deve manter compatibilidade retroativa com useFeeAgroStore', () => {
     expect(useFeeAgroStore).toBe(useAgroFinanceStore);
   });

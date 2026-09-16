@@ -128,8 +128,8 @@ export default function TransactionsPage() {
         {/* Header com Ações de Exportação */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 no-print">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Transações</h1>
-            <p className="text-gray-600 mt-1">Histórico completo de movimentações e liquidações</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Transações</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">Histórico completo de movimentações e liquidações</p>
           </div>
 
           <div className="flex items-center gap-2.5">
@@ -142,7 +142,7 @@ export default function TransactionsPage() {
             >
               <span>📥</span>
               <span>Exportar CSV</span>
-              <span className="text-xs text-gray-500 font-normal">({filteredTransactions.length})</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400 font-normal">({filteredTransactions.length})</span>
             </Button>
 
             <Button
@@ -159,14 +159,14 @@ export default function TransactionsPage() {
 
         {/* Feedback de Exportação */}
         {exportFeedback && (
-          <div className="bg-green-50 border border-green-200 text-green-800 text-sm px-4 py-2.5 rounded-lg flex items-center justify-between no-print animate-fadeIn">
+          <div className="bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-300 text-sm px-4 py-2.5 rounded-lg flex items-center justify-between no-print animate-fadeIn">
             <span className="flex items-center gap-2">
               <span>✅</span>
               <span>{exportFeedback}</span>
             </span>
             <button
               onClick={() => setExportFeedback(null)}
-              className="text-green-600 hover:text-green-900 font-bold cursor-pointer"
+              className="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-200 font-bold cursor-pointer"
             >
               ×
             </button>
@@ -179,10 +179,10 @@ export default function TransactionsPage() {
         </div>
 
         {/* Resumo */}
-        <div className="flex items-center justify-between text-sm text-gray-600">
+        <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
           <p>
-            Mostrando <span className="font-semibold text-gray-900">{filteredTransactions.length}</span> de{' '}
-            <span className="font-semibold text-gray-900">{transactions.length}</span> transações
+            Mostrando <span className="font-semibold text-gray-900 dark:text-gray-100">{filteredTransactions.length}</span> de{' '}
+            <span className="font-semibold text-gray-900 dark:text-gray-100">{transactions.length}</span> transações
           </p>
         </div>
 
@@ -191,11 +191,11 @@ export default function TransactionsPage() {
           // Estado Vazio
           <Card>
             <div className="text-center py-12">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-3xl">📭</span>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Nenhuma transação encontrada</h3>
-              <p className="text-gray-600">Tente ajustar os filtros para ver mais resultados.</p>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Nenhuma transação encontrada</h3>
+              <p className="text-gray-600 dark:text-gray-400">Tente ajustar os filtros para ver mais resultados.</p>
             </div>
           </Card>
         ) : (
@@ -203,11 +203,11 @@ export default function TransactionsPage() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-gray-200">
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
+                  <tr className="border-b border-gray-200 dark:border-gray-800">
+                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">
                       <button
                         onClick={() => handleSort('date')}
-                        className="flex items-center space-x-1 hover:text-agro-azul-escuros transition-colors"
+                        className="flex items-center space-x-1 hover:text-agro-azul-escuro dark:hover:text-blue-400 transition-colors"
                       >
                         <span>Data</span>
                         {sortField === 'date' && (
@@ -215,12 +215,12 @@ export default function TransactionsPage() {
                         )}
                       </button>
                     </th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Descrição</th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Tipo</th>
-                    <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">
+                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Descrição</th>
+                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Tipo</th>
+                    <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">
                       <button
                         onClick={() => handleSort('amount')}
-                        className="flex items-center justify-end space-x-1 hover:text-agro-azul transition-colors ml-auto"
+                        className="flex items-center justify-end space-x-1 hover:text-agro-azul-escuro dark:hover:text-blue-400 transition-colors ml-auto"
                       >
                         <span>Valor</span>
                         {sortField === 'amount' && (
@@ -228,23 +228,23 @@ export default function TransactionsPage() {
                         )}
                       </button>
                     </th>
-                    <th className="text-center py-3 px-4 text-sm font-semibold text-gray-700">Status</th>
-                    <th className="text-center py-3 px-4 text-sm font-semibold text-gray-700 no-print">Ações</th>
+                    <th className="text-center py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Status</th>
+                    <th className="text-center py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300 no-print">Ações</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredTransactions.map((transaction) => (
                     <tr 
                       key={transaction.id} 
-                      className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                      className="border-b border-gray-100 dark:border-gray-800/80 hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors"
                     >
                       <td className="py-4 px-4">
-                        <p className="text-sm text-gray-900">{formatRelativeDate(transaction.date)}</p>
+                        <p className="text-sm text-gray-900 dark:text-gray-100">{formatRelativeDate(transaction.date)}</p>
                       </td>
                       <td className="py-4 px-4">
-                        <p className="font-medium text-gray-900">{transaction.description}</p>
+                        <p className="font-medium text-gray-900 dark:text-gray-100">{transaction.description}</p>
                         {transaction.memo && (
-                          <p className="text-xs text-gray-500 mt-1">{transaction.memo}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{transaction.memo}</p>
                         )}
                       </td>
                       <td className="py-4 px-4">
@@ -254,7 +254,7 @@ export default function TransactionsPage() {
                       </td>
                       <td className="py-4 px-4 text-right">
                         <p className={`font-semibold ${
-                          transaction.type === 'IN' ? 'text-green-600' : 'text-red-600'
+                          transaction.type === 'IN' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
                         }`}>
                           {transaction.type === 'IN' ? '+' : '-'}{formatCurrency(transaction.amount)}
                         </p>
@@ -267,7 +267,7 @@ export default function TransactionsPage() {
                       <td className="py-4 px-4 text-center no-print">
                         <button
                           onClick={() => setSelectedTransaction(transaction)}
-                          className="text-gray-500 hover:text-gray-900 font-medium text-sm hover:cursor-pointer transition-colors"
+                          className="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 font-medium text-sm hover:cursor-pointer transition-colors"
                         >
                           Ver detalhes
                         </button>
