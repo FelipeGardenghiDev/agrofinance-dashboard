@@ -1,7 +1,7 @@
 # AgroFinance RWA Dashboard — Plataforma de Crédito e Ativos Tokenizados do Agro
 
 [![Live Demo](https://img.shields.io/badge/Live_Demo-Vercel_Active-success?style=for-the-badge&logo=vercel)](https://feeagro-dashboard.vercel.app/dashboard)
-[![CI Pipeline](https://github.com/felipegardenghidev/feeagro-dashboard/actions/workflows/ci.yml/badge.svg)](https://github.com/felipegardenghidev/feeagro-dashboard/actions)
+[![CI Pipeline](https://github.com/felipegardenghidev/agrofinance-dashboard/actions/workflows/ci.yml/badge.svg)](https://github.com/felipegardenghidev/agrofinance-dashboard/actions)
 ![Next.js](https://img.shields.io/badge/Next.js-16.1.6-black?style=flat-square&logo=next.js)
 ![React](https://img.shields.io/badge/React-19.2.3-blue?style=flat-square&logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue?style=flat-square&logo=typescript)
@@ -59,7 +59,7 @@ O **AgroFinance** entrega uma interface de internet banking corporativo que cons
 ## 🏛️ Arquitetura & Decisões de Engenharia
 
 ```text
-feeagro-dashboard/
+agrofinance-dashboard/
 ├── .github/
 │   └── workflows/
 │       └── ci.yml                    # Pipeline de CI (Lint + Vitest + Next Build)
@@ -132,8 +132,8 @@ pnpm test
 
 ```bash
 # 1. Clonar o repositório
-git clone https://github.com/felipegardenghidev/feeagro-dashboard.git
-cd feeagro-dashboard
+git clone https://github.com/felipegardenghidev/agrofinance-dashboard.git
+cd agrofinance-dashboard
 
 # 2. Instalar dependências
 pnpm install
