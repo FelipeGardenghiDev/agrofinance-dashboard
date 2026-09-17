@@ -8,7 +8,7 @@ on:
 
 jobs:
   validate:
-    name: Lint, Test & Build
+    name: Lint, Typecheck, Test & E2E
     runs-on: ubuntu-latest
 
     steps:
@@ -29,8 +29,30 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Run ESLint
+        run: pnpm run lint
+
+      - name: Run TypeScript typecheck
+        run: pnpm exec tsc --noEmit
+
       - name: Run Vitest unit & component tests
         run: pnpm test
 
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium
+
       - name: Run Next.js production build
         run: pnpm run build
+
+      - name: Run Playwright E2E tests
+        run: pnpm test:e2e
+        env:
+          CI: 'true'
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14

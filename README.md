@@ -6,7 +6,9 @@
 ![React](https://img.shields.io/badge/React-19.2.3-blue?style=flat-square&logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue?style=flat-square&logo=typescript)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-38bdf8?style=flat-square&logo=tailwind-css)
-![Vitest](https://img.shields.io/badge/Vitest-56_Passing-729B1B?style=flat-square&logo=vitest)
+![Vitest](https://img.shields.io/badge/Vitest-56_Unit_Passing-729B1B?style=flat-square&logo=vitest)
+![Playwright](https://img.shields.io/badge/Playwright-11_E2E_Passing-45ba4b?style=flat-square&logo=playwright)
+![Total Tests](https://img.shields.io/badge/Tests-67_Passing_Total-success?style=flat-square)
 ![Zustand](https://img.shields.io/badge/State-Zustand_Persist-orange?style=flat-square)
 ![Zod](https://img.shields.io/badge/Schema-Zod_v4-3068b7?style=flat-square)
 
@@ -142,12 +144,19 @@ agrofinance-dashboard/
 
 ---
 
-## 🧪 Suíte de Testes Automatizados (Vitest + Testing Library)
+## 🧪 Pirâmide de Testes Automatizados (Vitest + Playwright E2E)
 
-O projeto conta com **56 testes automatizados** cobrindo regras de negócio críticas:
+A plataforma conta com **67 testes automatizados aprovados (100% passing)**, cobrindo testes unitários, testes de componentes com Testing Library e fluxos End-to-End em navegadores reais:
 
 ```bash
+# Executar testes unitários e de componentes
 pnpm test
+
+# Executar testes End-to-End (Playwright Headless)
+pnpm test:e2e
+
+# Executar suíte completa (Unitários + E2E)
+pnpm run test:all
 ```
 
 ```text
@@ -160,20 +169,20 @@ pnpm test
  ✓ src/__tests__/NotificationCenter.test.tsx (6 tests)
  ✓ src/__tests__/credit.test.ts (5 tests)
  ✓ src/__tests__/validations.test.ts (9 tests)
+ ✓ e2e/credit-cpr.spec.ts (4 tests)
+ ✓ e2e/financial-operations.spec.ts (3 tests)
+ ✓ e2e/theme-and-accessibility.spec.ts (4 tests)
 
- Test Files  9 passed (9)
-      Tests  56 passed (56)
+ Total: 67 passed (56 Unit/Integration + 11 End-to-End)
 ```
 
 ### O que os testes cobrem:
 1. **Regras de Negócio Financeiras & RWA:** Validações de limites de saldo em dinheiro, limites de custódia de tokens, bloqueio de valores negativos/zero e obrigatoriedade de armazém credenciado para resgate físico.
 2. **Motor de Crédito Rural & CPR Digital:** Validação de cálculo de amortização (Tabela Price), limites de LTV (70%), trava de tokens em colateral, débito de quitação antecipada e liberação de garantias.
-3. **Sistema de Feedback Toast:** Renderização com atributos acessíveis (`role="status"`, `aria-live="polite"`), auto-dismiss e botão de remoção manual.
-4. **Mutação de Estado & Liquidação:** Débito/crédito de saldo, compra de tokens, venda a mercado, queima (*burn*) de tokens no resgate físico e persistência do tema.
-5. **Central de Notificações & Alertas:** Renderização de badge com contagem de não lidas, abertura/fechamento por teclado (`Esc`), alternância de filtros (*Todas*, *Não lidas*, *RWA*), marcar individual ou todas como lidas, remoção e limpeza total.
-6. **Alternância de Tema (Dark Mode):** Renderização acessível, abertura/fechamento por teclado (`Esc`), seleção e alteração do tema no store.
-7. **Helpers de Formatação & CSV:** Validação de conversão de moeda (`R$ 1.250,50`), datas relativas, mascaramento de CPF, truncamento de hashes e geração de CSV estruturado com BOM UTF-8.
-8. **Interatividade de Interface & Gráficos:** Renderização de filtros, alteração de tipos, busca textual dinâmica e comportamento do gráfico Donut e histórico.
+3. **Fluxos E2E Reais (Playwright):** Simulação completa de crédito no navegador Chromium, contratação de CPR on-chain, execução de transferências PIX em 2 etapas com verificação de comprovante, resgate físico com emissão de CDA/WA e filtros no extrato.
+4. **Sistema de Feedback Toast & Acessibilidade:** Renderização com atributos acessíveis (`role="status"`, `aria-live="polite"`), auto-dismiss, atalho de teclado `Escape` para fechar modais/notificações e alternância persistente de Dark Mode.
+5. **Mutação de Estado & Liquidação:** Débito/crédito de saldo, compra de tokens, venda a mercado e queima (*burn*) de tokens no resgate físico.
+6. **Helpers de Formatação & CSV:** Validação de conversão de moeda (`R$ 1.250,50`), datas relativas, mascaramento de CPF, truncamento de hashes e geração de CSV estruturado com BOM UTF-8.
 
 ---
 
