@@ -118,7 +118,7 @@ export const useAgroFinanceStore = create<AgroFinanceStore>()(
       marketQuotes: initialMarketQuotes,
       isLiveMarketActive: true,
       isOfflineFieldMode: false,
-      theme: 'system' as ThemeMode,
+      theme: 'light' as ThemeMode,
       isHydrated: false,
 
       setIsHydrated: (val: boolean) => set({ isHydrated: val }),
@@ -453,7 +453,9 @@ export const useAgroFinanceStore = create<AgroFinanceStore>()(
           hedgeContracts: [...mockHedgeContracts],
           marketQuotes: [...initialMarketQuotes],
           isLiveMarketActive: true,
+          theme: 'light' as ThemeMode,
         });
+        applyThemeToDocument('light');
         if (typeof window !== 'undefined') {
           try {
             localStorage.removeItem('agrofinance-storage-v1');

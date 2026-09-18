@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useAgroFinanceStore } from '@/lib/store';
 import { formatNumber } from '@/lib/utils';
 
@@ -12,6 +12,7 @@ export default function LiveMarketTicker() {
   const addToast = useAgroFinanceStore((state) => state.addToast);
 
   const [flashing, setFlashing] = useState(false);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Intervalo de mercado ao vivo (a cada 7 segundos)
   useEffect(() => {
@@ -38,6 +39,20 @@ export default function LiveMarketTicker() {
     });
   };
 
+  const handleScroll = (direction: 'left' | 'right') => {
+    if (!scrollContainerRef.current) return;
+    const scrollAmount = 240;
+    const offset = direction === 'left' ? -scrollAmount : scrollAmount;
+    if (typeof scrollContainerRef.current.scrollBy === 'function') {
+      scrollContainerRef.current.scrollBy({
+        left: offset,
+        behavior: 'smooth',
+      });
+    } else {
+      scrollContainerRef.current.scrollLeft += offset;
+    }
+  };
+
   return (
     <div
       role="region"
@@ -45,8 +60,8 @@ export default function LiveMarketTicker() {
       className="bg-slate-900 border-b border-slate-800 text-slate-200 text-xs py-2 px-3 sm:px-6 select-none shadow-inner"
     >
       <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
-        {/* Lado Esquerdo: Badge AO VIVO + Itens de Cotação */}
-        <div className="flex items-center gap-3 overflow-x-auto no-scrollbar py-0.5">
+        {/* Lado Esquerdo: Badge AO VIVO + Carrossel de Cotações com Botões Sutis */}
+        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1">
           {/* Badge Ao Vivo */}
           <div className="flex items-center gap-1.5 shrink-0 px-2 py-0.5 rounded-md bg-slate-800/90 border border-slate-700">
             <span
@@ -60,8 +75,26 @@ export default function LiveMarketTicker() {
             <span className="text-[10px] text-slate-500 hidden md:inline">| B3 & CBOT</span>
           </div>
 
-          {/* Lista de Cotações com Ticks */}
-          <div className="flex items-center gap-2.5 sm:gap-4 shrink-0" aria-live="polite">
+          {/* Botão Anterior do Carrossel */}
+          <button
+            type="button"
+            onClick={() => handleScroll('left')}
+            title="Rolar cotações anteriores"
+            aria-label="Cotações anteriores"
+            className="w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-white border border-slate-700/60 transition-all shrink-0 cursor-pointer active:scale-95 shadow-xs"
+          >
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+
+          {/* Lista de Cotações com Ticks (Scrollbar nativa 100% oculta) */}
+          <div
+            ref={scrollContainerRef}
+            className="flex items-center gap-2 sm:gap-2.5 overflow-x-auto scroll-smooth no-scrollbar py-0.5 flex-1 min-w-0"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            aria-live="polite"
+          >
             {marketQuotes.map((quote) => {
               const isPositive = quote.change24h >= 0;
               const tickClass = flashing
@@ -75,7 +108,7 @@ export default function LiveMarketTicker() {
               return (
                 <div
                   key={quote.symbol}
-                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-800/40 border border-slate-800 transition-all duration-300 ${tickClass}`}
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-800/40 border border-slate-800 transition-all duration-300 shrink-0 ${tickClass}`}
                 >
                   <span className="font-bold text-slate-100 text-[11px] tracking-tight">
                     {quote.symbol}
@@ -104,6 +137,19 @@ export default function LiveMarketTicker() {
               );
             })}
           </div>
+
+          {/* Botão Próximo do Carrossel */}
+          <button
+            type="button"
+            onClick={() => handleScroll('right')}
+            title="Rolar próximas cotações"
+            aria-label="Próximas cotações"
+            className="w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-white border border-slate-700/60 transition-all shrink-0 cursor-pointer active:scale-95 shadow-xs"
+          >
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
         </div>
 
         {/* Lado Direito: Controles Interativos (Pausar / Tick Manual) */}

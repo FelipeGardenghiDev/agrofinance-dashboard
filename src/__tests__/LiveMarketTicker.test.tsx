@@ -60,6 +60,19 @@ describe('LiveMarketTicker & Cotações em Tempo Real (B3 / CBOT)', () => {
     expect(toasts[0].title).toContain('Tick de Mercado Disparado');
   });
 
+  it('deve permitir navegar pelo carrossel através dos botões sutis de navegação', () => {
+    render(<LiveMarketTicker />);
+
+    const prevBtn = screen.getByRole('button', { name: /Cotações anteriores/i });
+    const nextBtn = screen.getByRole('button', { name: /Próximas cotações/i });
+
+    expect(prevBtn).toBeInTheDocument();
+    expect(nextBtn).toBeInTheDocument();
+
+    fireEvent.click(nextBtn);
+    fireEvent.click(prevBtn);
+  });
+
   it('deve recalcular os preços de tokens RWA e o patrimônio total ao aplicar um tick no store', () => {
     const initialPortfolioValue = useAgroFinanceStore.getState().portfolio.totalValue;
     expect(initialPortfolioValue).toBeGreaterThan(0);

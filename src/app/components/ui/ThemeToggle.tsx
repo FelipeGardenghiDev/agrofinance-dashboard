@@ -36,7 +36,7 @@ export default function ThemeToggle() {
     { mode: 'system', label: 'Sistema', icon: '💻' },
   ];
 
-  const currentOption = options.find((o) => o.mode === theme) || options[2];
+  const currentOption = options.find((o) => o.mode === theme) || options[0];
 
   return (
     <div className="relative" ref={dropdownRef}>
