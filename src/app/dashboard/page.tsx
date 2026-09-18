@@ -18,6 +18,7 @@ export default function DashboardPage() {
   const kyc = useAgroFinanceStore((state) => state.kyc);
   const transactions = useAgroFinanceStore((state) => state.transactions);
   const cprContracts = useAgroFinanceStore((state) => state.cprContracts || []);
+  const hedgeContracts = useAgroFinanceStore((state) => state.hedgeContracts || []);
 
   const activeCPRs = useMemo(() => {
     return cprContracts.filter((c) => c.status === 'active');
@@ -30,6 +31,18 @@ export default function DashboardPage() {
   const totalCPRLockedSacas = useMemo(() => {
     return activeCPRs.reduce((sum, c) => sum + c.collateralQuantity, 0);
   }, [activeCPRs]);
+
+  const activeHedgeContracts = useMemo(() => {
+    return hedgeContracts.filter((c) => c.status === 'active');
+  }, [hedgeContracts]);
+
+  const totalProtectedSacas = useMemo(() => {
+    return activeHedgeContracts.reduce((sum, c) => sum + c.quantitySacas, 0);
+  }, [activeHedgeContracts]);
+
+  const totalProtectedHedgeValue = useMemo(() => {
+    return activeHedgeContracts.reduce((sum, c) => sum + c.totalProtectedValue, 0);
+  }, [activeHedgeContracts]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -137,6 +150,39 @@ export default function DashboardPage() {
               </div>
             </div>
           </Card>
+        </div>
+
+        {/* Banner de Risco & Hedge B3 */}
+        <div className="bg-linear-to-r from-agro-azul-escuro via-agro-verde-escuro to-agro-azul-escuro rounded-2xl p-4 sm:p-5 text-white shadow-md flex flex-col md:flex-row md:items-center md:justify-between gap-4 border border-white/10">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-2xl shrink-0">
+              🛡️
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-sm sm:text-base font-bold text-white">
+                  Proteção de Preço de Safra (Hedge B3 / CBOT)
+                </h2>
+                <span className="text-[10px] uppercase font-black tracking-wider bg-amber-400 text-gray-900 px-1.5 py-0.5 rounded">
+                  NOVO
+                </span>
+              </div>
+              <p className="text-xs text-gray-200 mt-0.5">
+                {activeHedgeContracts.length > 0
+                  ? `${totalProtectedSacas.toLocaleString('pt-BR')} sacas protegidas em ${activeHedgeContracts.length} contratos B3 (${formatCurrency(totalProtectedHedgeValue)} assegurados).`
+                  : 'Proteja sua receita agrícola contra a oscilação das cotações em Chicago e do Dólar PTAX.'}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <Link
+              href="/hedge"
+              className="text-xs font-bold px-4 py-2.5 rounded-xl bg-white text-agro-verde-escuro hover:bg-gray-100 active:scale-95 transition-all shadow-sm flex items-center gap-1.5 cursor-pointer"
+            >
+              <span>Gerenciar Travas B3</span>
+              <span>→</span>
+            </Link>
+          </div>
         </div>
 
         {/* Inteligência de Mercado & Performance RWA */}

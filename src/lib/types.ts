@@ -182,6 +182,56 @@ export interface CreditSimulation {
   interestRateAnnual: number;
 }
 
+// ==================== HEDGE CAMBIAL & DERIVATIVOS B3/CBOT ====================
+export type HedgeType = 'commodity_put' | 'commodity_forward' | 'ndf_usd';
+export type HedgeStatus = 'active' | 'exercised' | 'expired';
+
+export interface HedgeContract {
+  id: string;
+  contractNumber: string; // ex: "HDG-2026-B3-SOJA-8921"
+  type: HedgeType;
+  commodityName: string;
+  commoditySymbol: string;
+  targetMaturity: string; // ex: "Março/2027", "Julho/2026"
+  quantitySacas: number;
+  strikePrice: number; // Preço de exercício garantido (R$ por saca ou cotação USD)
+  currentSpotPrice: number; // Preço de mercado spot atual
+  totalProtectedValue: number; // quantitySacas * strikePrice
+  premiumCost: number; // Custo do prêmio debitado na contratação (R$)
+  status: HedgeStatus;
+  createdAt: string; // ISO
+  expiryDate: string; // ISO
+  b3RegistryHash: string; // Hash simulado de registro B3
+}
+
+export interface HedgeSimulationResult {
+  type: HedgeType;
+  commodityName: string;
+  commoditySymbol: string;
+  targetMaturity: string;
+  quantitySacas: number;
+  strikePrice: number;
+  currentSpotPrice: number;
+  totalProtectedValue: number;
+  premiumRatePercent: number;
+  premiumCost: number;
+  isEligible: boolean;
+  isITM: boolean;
+  intrinsicValuePerSaca: number;
+  potentialProtectionGain: number; // Lucro estimado se o mercado cair 10%
+}
+
+// ==================== COTAÇÕES DE MERCADO AO VIVO (B3 / CBOT) ====================
+export interface MarketQuote {
+  symbol: string; // ex: "SOJA-PR", "SOJA-CBOT", "MILHO-B3", "USD/BRL", "BOI-B3"
+  name: string;
+  price: number;
+  change24h: number; // percentual de variação (+1.45% / -0.62%)
+  lastDirection: 'up' | 'down' | 'neutral';
+  unit: string;
+  updatedAt: string;
+}
+
 // ==================== DADOS DA APLICAÇÃO ====================
 export interface AppData {
   account: Account;
@@ -190,6 +240,8 @@ export interface AppData {
   transactions: Transaction[];
   notifications: AppNotification[];
   cprContracts: CPRContract[];
+  hedgeContracts: HedgeContract[];
+  marketQuotes: MarketQuote[];
 }
 
 // ==================== TEMA ====================

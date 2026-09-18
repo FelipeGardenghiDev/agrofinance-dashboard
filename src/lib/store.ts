@@ -9,7 +9,10 @@ import type {
   ThemeMode, 
   AppNotification, 
   ToastMessage, 
-  CPRContract 
+  CPRContract,
+  HedgeContract,
+  HedgeType,
+  MarketQuote
 } from './types';
 import type { OperationFormValues } from './validations';
 import { 
@@ -19,9 +22,11 @@ import {
   mockTransactions, 
   mockRWAAssets, 
   mockNotifications, 
-  mockCPRContracts 
+  mockCPRContracts,
+  mockHedgeContracts,
+  initialMarketQuotes
 } from './mockData';
-import { parseAmount, calculateCPRSimulation } from './utils';
+import { parseAmount, calculateCPRSimulation, formatCurrency } from './utils';
 
 export const applyThemeToDocument = (theme: ThemeMode) => {
   if (typeof window === 'undefined') return;
@@ -45,6 +50,9 @@ export interface AgroFinanceStore {
   notifications: AppNotification[];
   toasts: ToastMessage[];
   cprContracts: CPRContract[];
+  hedgeContracts: HedgeContract[];
+  marketQuotes: MarketQuote[];
+  isLiveMarketActive: boolean;
   theme: ThemeMode;
   isHydrated: boolean;
   setIsHydrated: (val: boolean) => void;
@@ -70,6 +78,28 @@ export interface AgroFinanceStore {
   // Ações de Crédito Rural / CPR com Garantia RWA
   requestCPR: (data: { amount: number; termMonths: number; assetId: string }) => { success: boolean; error?: string; contract?: CPRContract };
   settleCPR: (contractId: string) => { success: boolean; error?: string };
+
+  // Ações de Hedge Cambial & Derivativos B3/CBOT
+  requestHedge: (data: { 
+    type: HedgeType; 
+    commodityName: string; 
+    commoditySymbol: string; 
+    targetMaturity: string; 
+    quantitySacas: number; 
+    strikePrice: number; 
+    currentSpotPrice: number; 
+    premiumRatePercent?: number; 
+  }) => { success: boolean; error?: string; contract?: HedgeContract };
+  settleHedge: (contractId: string) => { success: boolean; error?: string; gain?: number };
+
+  // Ações de Mercado ao Vivo / Streaming Ticker
+  toggleLiveMarket: () => void;
+  applyMarketTick: () => void;
+
+  // Ações de Modo Campo & Resiliência Offline
+  isOfflineFieldMode: boolean;
+  setOfflineFieldMode: (val: boolean) => void;
+  toggleSimulateOfflineMode: () => void;
 }
 
 export type FeeAgroStore = AgroFinanceStore;
@@ -84,6 +114,10 @@ export const useAgroFinanceStore = create<AgroFinanceStore>()(
       notifications: mockNotifications,
       toasts: [] as ToastMessage[],
       cprContracts: mockCPRContracts,
+      hedgeContracts: mockHedgeContracts,
+      marketQuotes: initialMarketQuotes,
+      isLiveMarketActive: true,
+      isOfflineFieldMode: false,
       theme: 'system' as ThemeMode,
       isHydrated: false,
 
@@ -416,6 +450,9 @@ export const useAgroFinanceStore = create<AgroFinanceStore>()(
           notifications: [...mockNotifications],
           toasts: [],
           cprContracts: [...mockCPRContracts],
+          hedgeContracts: [...mockHedgeContracts],
+          marketQuotes: [...initialMarketQuotes],
+          isLiveMarketActive: true,
         });
         if (typeof window !== 'undefined') {
           try {
@@ -691,6 +728,252 @@ export const useAgroFinanceStore = create<AgroFinanceStore>()(
         return { success: true };
       },
 
+      requestHedge: (data) => {
+        const state = get();
+        const quantity = Math.max(0, data.quantitySacas);
+        const strike = Math.max(0, data.strikePrice);
+        const spot = Math.max(0, data.currentSpotPrice);
+
+        if (quantity < 50) {
+          return { success: false, error: 'A quantidade mínima para proteção B3 é de 50 sacas.' };
+        }
+        if (strike <= 0) {
+          return { success: false, error: 'O preço de exercício deve ser maior que zero.' };
+        }
+
+        const totalProtectedValue = Number((quantity * strike).toFixed(2));
+        const rate = data.premiumRatePercent ?? (strike > spot ? 4.5 : (strike === spot ? 3.2 : 2.2));
+        const premiumCost = Number((totalProtectedValue * (rate / 100)).toFixed(2));
+
+        if (state.account.availableBalance < premiumCost) {
+          return {
+            success: false,
+            error: `Saldo insuficiente para pagar o prêmio de ${formatCurrency(premiumCost)}. Saldo atual: ${formatCurrency(state.account.availableBalance)}`,
+          };
+        }
+
+        const contractNumber = `HDG-2026-B3-${data.commoditySymbol.toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
+        const newContract: HedgeContract = {
+          id: `HDG-${Date.now().toString().slice(-6)}`,
+          contractNumber,
+          type: data.type,
+          commodityName: data.commodityName,
+          commoditySymbol: data.commoditySymbol,
+          targetMaturity: data.targetMaturity,
+          quantitySacas: quantity,
+          strikePrice: strike,
+          currentSpotPrice: spot,
+          totalProtectedValue,
+          premiumCost,
+          status: 'active',
+          createdAt: new Date().toISOString(),
+          expiryDate: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000).toISOString(),
+          b3RegistryHash: `0xb3${Math.random().toString(16).substring(2, 6)}...${Math.random().toString(16).substring(2, 6)}`,
+        };
+
+        const newTransaction: Transaction = {
+          id: `TRX-${Date.now().toString().slice(-6)}`,
+          date: new Date().toISOString(),
+          description: `Contratação Hedge B3 (${data.commoditySymbol})`,
+          type: 'OUT',
+          category: 'fee',
+          amount: premiumCost,
+          status: 'completed',
+          fromAddress: `${state.account.ownerName} (Conta Corrente)`,
+          toAddress: 'B3 Brasil Bolsa Balcão - Derivativos Agro',
+          memo: `Prêmio de trava de preço para ${quantity.toLocaleString('pt-BR')} sacas @ R$ ${strike.toFixed(2)} (${data.targetMaturity}).`,
+          txHash: newContract.b3RegistryHash,
+        };
+
+        const hedgeNotif: AppNotification = {
+          id: `NOTIF-${Date.now().toString().slice(-6)}`,
+          title: 'Proteção de Safra Registrada na B3',
+          message: `Contrato ${contractNumber} emitido. Trava de preço garantida a R$ ${strike.toFixed(2)}/saca.`,
+          timestamp: new Date().toISOString(),
+          type: 'operation',
+          priority: 'medium',
+          read: false,
+          actionUrl: '/hedge',
+          actionLabel: 'Ver Posição',
+        };
+
+        set({
+          account: {
+            ...state.account,
+            availableBalance: Number((state.account.availableBalance - premiumCost).toFixed(2)),
+          },
+          transactions: [newTransaction, ...state.transactions],
+          notifications: [hedgeNotif, ...state.notifications],
+          hedgeContracts: [newContract, ...state.hedgeContracts],
+        });
+
+        get().addToast({
+          type: 'success',
+          title: 'Hedge B3 Contratado!',
+          message: `Contrato #${contractNumber} registrado com sucesso.`,
+        });
+
+        return { success: true, contract: newContract };
+      },
+
+      settleHedge: (contractId: string) => {
+        const state = get();
+        const contract = state.hedgeContracts.find((c) => c.id === contractId);
+
+        if (!contract) {
+          return { success: false, error: 'Contrato de hedge não encontrado.' };
+        }
+
+        if (contract.status !== 'active') {
+          return { success: false, error: 'Este contrato já foi liquidado ou expirou.' };
+        }
+
+        const payoff = Math.max(
+          0,
+          Number(((contract.strikePrice - contract.currentSpotPrice) * contract.quantitySacas).toFixed(2))
+        );
+
+        const updatedContracts = state.hedgeContracts.map((c) =>
+          c.id === contractId ? { ...c, status: 'exercised' as const } : c
+        );
+
+        let newTransactions = [...state.transactions];
+        let newAvailableBalance = state.account.availableBalance;
+
+        if (payoff > 0) {
+          newAvailableBalance = Number((newAvailableBalance + payoff).toFixed(2));
+          const payoffTx: Transaction = {
+            id: `TRX-${Date.now().toString().slice(-6)}`,
+            date: new Date().toISOString(),
+            description: `Exercício Hedge B3 (${contract.commoditySymbol})`,
+            type: 'IN',
+            category: 'dividend',
+            amount: payoff,
+            status: 'completed',
+            fromAddress: 'B3 Brasil Bolsa Balcão - Câmara de Liquidação',
+            toAddress: `${state.account.ownerName} (Conta Corrente)`,
+            memo: `Liquidação de Put. Ganho de R$ ${(contract.strikePrice - contract.currentSpotPrice).toFixed(2)}/saca sobre ${contract.quantitySacas.toLocaleString('pt-BR')} sacas.`,
+            txHash: `0xb3${Math.random().toString(16).substring(2, 6)}...${Math.random().toString(16).substring(2, 6)}`,
+          };
+          newTransactions = [payoffTx, ...newTransactions];
+        }
+
+        const settleNotif: AppNotification = {
+          id: `NOTIF-${Date.now().toString().slice(-6)}`,
+          title: payoff > 0 ? 'Opção Exercida & Lucro Creditado' : 'Posição de Hedge Finalizada',
+          message: payoff > 0
+            ? `Contrato ${contract.contractNumber} liquidado. Crédito de ${formatCurrency(payoff)} recebido em conta.`
+            : `Contrato ${contract.contractNumber} encerrado a mercado.`,
+          timestamp: new Date().toISOString(),
+          type: 'operation',
+          priority: 'medium',
+          read: false,
+          actionUrl: '/hedge',
+          actionLabel: 'Ver Histórico',
+        };
+
+        set({
+          account: {
+            ...state.account,
+            availableBalance: newAvailableBalance,
+          },
+          transactions: newTransactions,
+          notifications: [settleNotif, ...state.notifications],
+          hedgeContracts: updatedContracts,
+        });
+
+        get().addToast({
+          type: payoff > 0 ? 'success' : 'info',
+          title: payoff > 0 ? 'Lucro de Proteção Creditado!' : 'Posição Encerrada',
+          message: payoff > 0
+            ? `${formatCurrency(payoff)} creditados em sua conta corrente.`
+            : 'Contrato de proteção finalizado.',
+        });
+
+        return { success: true, gain: payoff };
+      },
+
+      toggleLiveMarket: () => {
+        set((state) => ({ isLiveMarketActive: !state.isLiveMarketActive }));
+      },
+
+      applyMarketTick: () => {
+        const state = get();
+
+        // 1. Atualiza as cotações com uma oscilação realista (-0.35% a +0.35%)
+        const updatedQuotes = state.marketQuotes.map((quote) => {
+          const deltaPercent = Number(((Math.random() * 0.7 - 0.35)).toFixed(2));
+          const priceChange = quote.price * (deltaPercent / 100);
+          const isUSD = quote.symbol === 'USD/BRL';
+          const newPrice = Number(Math.max(0.1, quote.price + priceChange).toFixed(isUSD ? 4 : 2));
+          const newChange24h = Number((quote.change24h + deltaPercent).toFixed(2));
+          const direction: 'up' | 'down' = deltaPercent >= 0 ? 'up' : 'down';
+
+          return {
+            ...quote,
+            price: newPrice,
+            change24h: newChange24h,
+            lastDirection: direction,
+            updatedAt: new Date().toISOString(),
+          };
+        });
+
+        // 2. Atualiza os preços dos tokens RWA no portfólio correlacionados
+        const sojaPR = updatedQuotes.find((q) => q.symbol === 'SOJA-PR');
+        const milhoB3 = updatedQuotes.find((q) => q.symbol === 'MILHO-B3');
+
+        const updatedAssets = state.portfolio.assets.map((asset) => {
+          let newPrice = asset.pricePerToken;
+          let newPerf = asset.performance24h;
+
+          if (asset.assetType === 'SOJA' && sojaPR) {
+            const factor = sojaPR.lastDirection === 'up' ? 1.0025 : 0.9975;
+            newPrice = Number((asset.pricePerToken * factor).toFixed(2));
+            newPerf = Number((asset.performance24h + (factor > 1 ? 0.25 : -0.25)).toFixed(2));
+          } else if (asset.assetType === 'MILHO' && milhoB3) {
+            const factor = milhoB3.lastDirection === 'up' ? 1.0025 : 0.9975;
+            newPrice = Number((asset.pricePerToken * factor).toFixed(2));
+            newPerf = Number((asset.performance24h + (factor > 1 ? 0.25 : -0.25)).toFixed(2));
+          }
+
+          const totalValue = Number((asset.quantity * newPrice).toFixed(2));
+          return {
+            ...asset,
+            pricePerToken: newPrice,
+            totalValue,
+            performance24h: newPerf,
+            lastUpdate: new Date().toISOString(),
+          };
+        });
+
+        const newTotalPortfolioValue = updatedAssets.reduce((sum, a) => sum + a.totalValue, 0);
+
+        set({
+          marketQuotes: updatedQuotes,
+          portfolio: {
+            assets: updatedAssets,
+            totalValue: Number(newTotalPortfolioValue.toFixed(2)),
+          },
+        });
+      },
+
+      setOfflineFieldMode: (val: boolean) => {
+        set({ isOfflineFieldMode: val });
+      },
+
+      toggleSimulateOfflineMode: () => {
+        const nextState = !get().isOfflineFieldMode;
+        set({ isOfflineFieldMode: nextState });
+        if (!nextState) {
+          get().addToast({
+            type: 'success',
+            title: 'Conexão Restabelecida!',
+            message: 'Modo Online ativo. Dados sincronizados com sucesso.',
+            duration: 3000,
+          });
+        }
+      },
+
       getFilteredTransactions: (filters: { type?: string; status?: string; searchTerm?: string }) => {
         const { transactions } = get();
         let filtered = [...transactions];
@@ -725,6 +1008,9 @@ export const useAgroFinanceStore = create<AgroFinanceStore>()(
         transactions: state.transactions,
         notifications: state.notifications,
         cprContracts: state.cprContracts,
+        hedgeContracts: state.hedgeContracts,
+        marketQuotes: state.marketQuotes,
+        isLiveMarketActive: state.isLiveMarketActive,
         theme: state.theme,
       }),
       onRehydrateStorage: () => (state) => {

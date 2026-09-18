@@ -1,6 +1,6 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import type { Transaction, RWAAsset } from './types';
+import type { Transaction, RWAAsset, HedgeContract, HedgeSimulationResult, HedgeType } from './types';
 
 // Utility para merge de classes Tailwind
 
@@ -384,4 +384,80 @@ export const copyToClipboard = async (text: string): Promise<boolean> => {
   } catch {
     return false;
   }
+};
+
+// ==================== SIMULAÇÃO & DERIVATIVOS HEDGE B3 ====================
+
+export const calculateHedgeSimulation = (
+  type: HedgeType,
+  commodityName: string,
+  commoditySymbol: string,
+  targetMaturity: string,
+  quantitySacas: number,
+  strikePrice: number,
+  currentSpotPrice: number,
+  availableBalance: number
+): HedgeSimulationResult => {
+  const safeQuantity = Math.max(0, quantitySacas);
+  const safeStrike = Math.max(0, strikePrice);
+  const safeSpot = Math.max(0, currentSpotPrice);
+
+  const totalProtectedValue = Number((safeQuantity * safeStrike).toFixed(2));
+
+  // Taxa de prêmio com base no moneyness (Strike vs Spot)
+  let baseRate = 3.2; // ~3.2% ao semestre para ATM
+  if (safeSpot > 0) {
+    const moneyness = safeStrike / safeSpot;
+    if (moneyness >= 1.05) baseRate = 4.5;
+    else if (moneyness > 1.0) baseRate = 3.8;
+    else if (moneyness < 0.95) baseRate = 2.2;
+    else if (moneyness < 1.0) baseRate = 2.8;
+  }
+
+  const premiumCost = Number((totalProtectedValue * (baseRate / 100)).toFixed(2));
+  const isEligible = safeQuantity >= 50 && safeStrike > 0 && availableBalance >= premiumCost;
+  const isITM = safeStrike > safeSpot;
+  const intrinsicValuePerSaca = Math.max(0, Number((safeStrike - safeSpot).toFixed(2)));
+
+  // Cenário de stress: queda de 10% no preço spot
+  const stressDropSpot = safeSpot * 0.90;
+  const potentialProtectionGain = safeStrike > stressDropSpot
+    ? Number(((safeStrike - stressDropSpot) * safeQuantity).toFixed(2))
+    : 0;
+
+  return {
+    type,
+    commodityName,
+    commoditySymbol,
+    targetMaturity,
+    quantitySacas: safeQuantity,
+    strikePrice: safeStrike,
+    currentSpotPrice: safeSpot,
+    totalProtectedValue,
+    premiumRatePercent: baseRate,
+    premiumCost,
+    isEligible,
+    isITM,
+    intrinsicValuePerSaca,
+    potentialProtectionGain,
+  };
+};
+
+export const calculateHedgePayoff = (contract: HedgeContract): {
+  isITM: boolean;
+  payoffPerSaca: number;
+  totalPayoff: number;
+  netGain: number;
+} => {
+  const isITM = contract.strikePrice > contract.currentSpotPrice;
+  const payoffPerSaca = Math.max(0, Number((contract.strikePrice - contract.currentSpotPrice).toFixed(2)));
+  const totalPayoff = Number((payoffPerSaca * contract.quantitySacas).toFixed(2));
+  const netGain = Number((totalPayoff - contract.premiumCost).toFixed(2));
+
+  return {
+    isITM,
+    payoffPerSaca,
+    totalPayoff,
+    netGain,
+  };
 };

@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { createOperationSchema } from '../lib/validations';
+import { mockRWAAssets } from '../lib/mockData';
 
 describe('createOperationSchema - Validações de Regras de Negócio', () => {
   const currentBalance = 50000;
@@ -130,5 +131,48 @@ describe('createOperationSchema - Validações de Regras de Negócio', () => {
       warehouse: 'Silo Central Cooperativa Agro SP',
     };
     expect(rwaSchema.safeParse(validRedeem).success).toBe(true);
+  });
+
+  it('deve validar limites de saldo de tokens e pertencimento ao portfólio do produtor', () => {
+    const portfolioSchema = createOperationSchema(50000, mockRWAAssets);
+
+    // Venda de ativo inexistente na carteira
+    const nonExistentSale = {
+      type: 'sell_rwa' as const,
+      assetId: 'RWA-CAFE-999',
+      amount: '10.000,00',
+    };
+    const res1 = portfolioSchema.safeParse(nonExistentSale);
+    expect(res1.success).toBe(false);
+    if (!res1.success) {
+      expect(res1.error.issues.some(i => i.message.includes('não encontrado'))).toBe(true);
+    }
+
+    // Venda acima do saldo total de tokens daquele ativo
+    const overSale = {
+      type: 'sell_rwa' as const,
+      assetId: 'RWA-SOJA-001',
+      amount: '200.000,00',
+    };
+    const res2 = portfolioSchema.safeParse(overSale);
+    expect(res2.success).toBe(false);
+    if (!res2.success) {
+      expect(res2.error.issues.some(i => i.message.includes('insuficiente'))).toBe(true);
+    }
+
+    // Aporte de investimento sem ativo deve falhar
+    const noAssetDeposit = {
+      type: 'investment_rwa' as const,
+      amount: '10.000,00',
+    };
+    expect(portfolioSchema.safeParse(noAssetDeposit).success).toBe(false);
+
+    // Aporte de investimento válido
+    const validDeposit = {
+      type: 'investment_rwa' as const,
+      assetId: 'RWA-SOJA-001',
+      amount: '10.000,00',
+    };
+    expect(portfolioSchema.safeParse(validDeposit).success).toBe(true);
   });
 });

@@ -7,7 +7,9 @@ import type {
   AppData,
   Warehouse,
   AppNotification,
-  CPRContract
+  CPRContract,
+  HedgeContract,
+  MarketQuote
 } from './types';
 
 // ==================== CONTA ====================
@@ -300,6 +302,119 @@ export const mockCPRContracts: CPRContract[] = [
   },
 ];
 
+// ==================== CONTRATOS DE HEDGE & DERIVATIVOS B3 ====================
+export const mockHedgeContracts: HedgeContract[] = [
+  {
+    id: 'HDG-001',
+    contractNumber: 'HDG-2026-B3-SOJA-8921',
+    type: 'commodity_put',
+    commodityName: 'Soja Premium B3',
+    commoditySymbol: 'SOJA24',
+    targetMaturity: 'Março/2027',
+    quantitySacas: 1200,
+    strikePrice: 52.00,
+    currentSpotPrice: 48.50,
+    totalProtectedValue: 62400.00,
+    premiumCost: 1996.80,
+    status: 'active',
+    createdAt: '2026-02-01T14:30:00Z',
+    expiryDate: '2027-03-31T18:00:00Z',
+    b3RegistryHash: '0xb37a...99e1',
+  },
+  {
+    id: 'HDG-002',
+    contractNumber: 'HDG-2026-B3-MLHO-4112',
+    type: 'commodity_put',
+    commodityName: 'Milho Híbrido B3',
+    commoditySymbol: 'MLHO25',
+    targetMaturity: 'Julho/2026',
+    quantitySacas: 2500,
+    strikePrice: 26.50,
+    currentSpotPrice: 28.30,
+    totalProtectedValue: 66250.00,
+    premiumCost: 1457.50,
+    status: 'active',
+    createdAt: '2026-02-10T11:00:00Z',
+    expiryDate: '2026-07-31T18:00:00Z',
+    b3RegistryHash: '0xb39c...33f2',
+  },
+  {
+    id: 'HDG-003',
+    contractNumber: 'HDG-2026-B3-NDF-6340',
+    type: 'ndf_usd',
+    commodityName: 'NDF Cambial Dólar PTAX',
+    commoditySymbol: 'USD/BRL',
+    targetMaturity: 'Novembro/2026',
+    quantitySacas: 800,
+    strikePrice: 5.65,
+    currentSpotPrice: 5.42,
+    totalProtectedValue: 45200.00,
+    premiumCost: 1446.40,
+    status: 'active',
+    createdAt: '2026-01-28T16:15:00Z',
+    expiryDate: '2026-11-30T18:00:00Z',
+    b3RegistryHash: '0xb3fa...71b8',
+  },
+];
+
+// ==================== COTAÇÕES DE MERCADO AO VIVO (B3 / CBOT) ====================
+export const initialMarketQuotes: MarketQuote[] = [
+  {
+    symbol: 'SOJA-PR',
+    name: 'Soja Paranaguá',
+    price: 134.80,
+    change24h: 1.45,
+    lastDirection: 'up',
+    unit: 'sc 60kg',
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    symbol: 'SOJA-CBOT',
+    name: 'Soja Chicago (CBOT)',
+    price: 1042.50,
+    change24h: 0.85,
+    lastDirection: 'up',
+    unit: '¢/bu',
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    symbol: 'MILHO-B3',
+    name: 'Milho Campinas B3',
+    price: 64.20,
+    change24h: -0.62,
+    lastDirection: 'down',
+    unit: 'sc 60kg',
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    symbol: 'USD/BRL',
+    name: 'Dólar PTAX',
+    price: 5.4210,
+    change24h: -0.35,
+    lastDirection: 'down',
+    unit: 'R$',
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    symbol: 'BOI-B3',
+    name: 'Boi Gordo B3 (BGI)',
+    price: 248.50,
+    change24h: 0.40,
+    lastDirection: 'up',
+    unit: '@ à vista',
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    symbol: 'SOJA24-RWA',
+    name: 'Soja Premium RWA',
+    price: 48.50,
+    change24h: 2.30,
+    lastDirection: 'up',
+    unit: 'token',
+    updatedAt: new Date().toISOString(),
+  },
+];
+
 // ==================== DADOS CONSOLIDADOS ====================
 export const mockAppData: AppData = {
   account: mockAccount,
@@ -308,6 +423,8 @@ export const mockAppData: AppData = {
   transactions: mockTransactions,
   notifications: mockNotifications,
   cprContracts: mockCPRContracts,
+  hedgeContracts: mockHedgeContracts,
+  marketQuotes: initialMarketQuotes,
 };
 
 // ==================== HELPERS ====================

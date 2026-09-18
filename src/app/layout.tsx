@@ -15,6 +15,12 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "AgroFinance — Plataforma de Crédito e Ativos Tokenizados (RWA)",
   description: "Plataforma financeira de custódia, crédito e gestão de ativos tokenizados (RWA) do agronegócio.",
+  applicationName: "AgroFinance",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "AgroFinance",
+  },
 };
 
 export default function RootLayout({

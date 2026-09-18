@@ -15,6 +15,8 @@ const Header = () => {
 
   const account = useAgroFinanceStore((state) => state.account);
   const resetToDefaultData = useAgroFinanceStore((state) => state.resetToDefaultData);
+  const isOfflineFieldMode = useAgroFinanceStore((state) => state.isOfflineFieldMode);
+  const toggleSimulateOfflineMode = useAgroFinanceStore((state) => state.toggleSimulateOfflineMode);
 
   const handleReset = () => {
     if (confirm('Deseja restaurar os dados originais da demonstração?')) {
@@ -55,6 +57,14 @@ const Header = () => {
             <NavLink href="/credit" active={pathname === '/credit'}>
               Crédito & CPR
             </NavLink>
+            <NavLink href="/hedge" active={pathname === '/hedge'}>
+              <span className="flex items-center gap-1.5">
+                Hedge & B3
+                <span className="text-[9px] bg-amber-500/80 text-white font-black px-1 py-0.2 rounded-xs">
+                  NOVO
+                </span>
+              </span>
+            </NavLink>
             <NavLink href="/new-operation" active={pathname === '/new-operation'}>
               Nova Operação
             </NavLink>
@@ -67,6 +77,25 @@ const Header = () => {
 
             {/* Theme Toggle */}
             <ThemeToggle />
+
+            {/* Modo Campo / Resiliência Offline */}
+            <button
+              onClick={toggleSimulateOfflineMode}
+              title={
+                isOfflineFieldMode
+                  ? 'Modo Campo Ativo (Offline Simulado) — Clique para reconectar'
+                  : 'Simular Modo Campo (Offline Resiliente PWA)'
+              }
+              data-testid="header-offline-toggle"
+              className={`text-xs px-2.5 py-1.5 rounded-lg border transition-all flex items-center gap-1.5 cursor-pointer shadow-xs ${
+                isOfflineFieldMode
+                  ? 'bg-amber-500/25 text-amber-300 border-amber-500/80 ring-1 ring-amber-400 font-semibold'
+                  : 'border-white/20 text-gray-200 hover:text-white hover:bg-white/10 hover:border-white/40 active:scale-95'
+              }`}
+            >
+              <span>{isOfflineFieldMode ? '📡' : '🌾'}</span>
+              <span>{isOfflineFieldMode ? 'Modo Campo (ON)' : 'Modo Campo'}</span>
+            </button>
 
             {/* Botão de reset para recrutadores */}
             <button
@@ -139,6 +168,13 @@ const Header = () => {
               Crédito & CPR
             </MobileNavLink>
             <MobileNavLink
+              href="/hedge"
+              active={pathname === '/hedge'}
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Hedge & Derivativos B3 🌾
+            </MobileNavLink>
+            <MobileNavLink
               href="/new-operation"
               active={pathname === '/new-operation'}
               onClick={() => setMobileMenuOpen(false)}
@@ -154,6 +190,21 @@ const Header = () => {
             </div>
             <div className="flex items-center gap-2">
               <ThemeToggle />
+              <button
+                onClick={() => {
+                  toggleSimulateOfflineMode();
+                  setMobileMenuOpen(false);
+                }}
+                data-testid="header-offline-toggle-mobile"
+                className={`text-xs px-2.5 py-1.5 rounded-lg border transition-all cursor-pointer flex items-center gap-1.5 ${
+                  isOfflineFieldMode
+                    ? 'bg-amber-500/25 text-amber-300 border-amber-500/80 font-semibold'
+                    : 'border-white/30 text-white hover:bg-white/10 active:scale-95'
+                }`}
+              >
+                <span>{isOfflineFieldMode ? '📡' : '🌾'}</span>
+                <span>{isOfflineFieldMode ? 'Campo ON' : 'Modo Campo'}</span>
+              </button>
               <button
                 onClick={() => {
                   handleReset();

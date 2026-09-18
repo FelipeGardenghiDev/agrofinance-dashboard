@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import {
   formatCurrency,
   parseAmount,
@@ -9,7 +9,12 @@ import {
   truncateHash,
   maskCPF,
   generateTransactionsCSV,
+  calculateCPRSimulation,
+  copyToClipboard,
+  downloadCSV,
 } from '../lib/utils';
+import { mockRWAAssets } from '../lib/mockData';
+import type { RWAAsset } from '../lib/types';
 
 describe('utils - Funções Utilitárias e de Formatação', () => {
   describe('formatCurrency', () => {
@@ -110,6 +115,59 @@ describe('utils - Funções Utilitárias e de Formatação', () => {
       expect(csv).toContain('"15400,50"');
       expect(csv).toContain('"Concluída"');
       expect(csv).toContain('"0xabc123"');
+    });
+  });
+
+  describe('calculateCPRSimulation', () => {
+    it('deve simular cálculo Price de parcelas e garantia RWA requerida', () => {
+      const asset: RWAAsset = {
+        ...mockRWAAssets[0],
+        quantity: 5000,
+        lockedQuantity: 500,
+      };
+
+      const result = calculateCPRSimulation(100000, 12, asset, 11.5, 0.7);
+
+      expect(result.requestedAmount).toBe(100000);
+      expect(result.termMonths).toBe(12);
+      expect(result.monthlyPayment).toBeGreaterThan(8000);
+      expect(result.totalRepayment).toBeGreaterThan(100000);
+      expect(result.requiredCollateralValue).toBeGreaterThan(140000);
+      expect(result.isEligible).toBe(true);
+    });
+
+    it('deve retornar não elegível quando os tokens livres forem insuficientes', () => {
+      const asset: RWAAsset = {
+        ...mockRWAAssets[0],
+        quantity: 100,
+        lockedQuantity: 90,
+      };
+
+      const result = calculateCPRSimulation(500000, 12, asset);
+      expect(result.isEligible).toBe(false);
+    });
+  });
+
+  describe('copyToClipboard & downloadCSV', () => {
+    it('deve copiar texto usando navigator.clipboard com sucesso', async () => {
+      Object.defineProperty(window, 'isSecureContext', { value: true, configurable: true });
+      Object.assign(navigator, {
+        clipboard: {
+          writeText: vi.fn().mockResolvedValue(undefined),
+        },
+      });
+      const ok = await copyToClipboard('0x123456789');
+      expect(ok).toBe(true);
+      expect(navigator.clipboard.writeText).toHaveBeenCalledWith('0x123456789');
+    });
+
+    it('deve disparar downloadCSV criando elemento âncora', () => {
+      const createObjectURLMock = vi.fn().mockReturnValue('blob:mock-url');
+      const revokeObjectURLMock = vi.fn();
+      globalThis.URL.createObjectURL = createObjectURLMock;
+      globalThis.URL.revokeObjectURL = revokeObjectURLMock;
+
+      expect(() => downloadCSV('header1;header2\r\nval1;val2', 'extrato.csv')).not.toThrow();
     });
   });
 });
