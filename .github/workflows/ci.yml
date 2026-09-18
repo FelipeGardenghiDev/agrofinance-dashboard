@@ -35,8 +35,8 @@ jobs:
       - name: Run TypeScript typecheck
         run: pnpm exec tsc --noEmit
 
-      - name: Run Vitest unit & component tests
-        run: pnpm test
+      - name: Run Vitest unit tests & coverage
+        run: pnpm test:coverage
 
       - name: Install Playwright browsers
         run: pnpm exec playwright install --with-deps chromium

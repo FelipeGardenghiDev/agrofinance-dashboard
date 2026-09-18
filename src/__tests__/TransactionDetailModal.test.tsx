@@ -8,14 +8,11 @@ const mockTx: Transaction = {
   date: '2026-03-20T10:00:00Z',
   description: 'Venda CPR Soja B3',
   amount: 450000,
-  type: 'credit',
-  category: 'cpr_emission',
+  type: 'IN',
+  category: 'rwa_sale',
   status: 'completed',
   txHash: '0xabc123456789def0',
-  commodityType: 'SOJA',
-  quantity: 3000,
-  unit: 'sacas',
-  to: 'B3 Custódia Agro',
+  toAddress: 'B3 Custódia Agro',
 };
 
 describe('TransactionDetailModal', () => {
