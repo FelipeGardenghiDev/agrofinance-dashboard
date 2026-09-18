@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:webpack": "next dev --webpack",
+    "clean": "node -e \"try { require('fs').rmSync('.next', { recursive: true, force: true }); } catch(e){}\"",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
