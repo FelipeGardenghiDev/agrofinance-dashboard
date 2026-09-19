@@ -60,12 +60,33 @@ export const formatRelativeDate = (dateString: string): string => {
   return formatDate(dateString);
 };
 
-// ==================== VALIDAÇÃO ====================
-
-// Valida CPF (apenas o formato)
+// Valida CPF com cálculo dos dígitos verificadores (Módulo 11 da Receita Federal)
 export const isValidCPF = (cpf: string): boolean => {
   const cleaned = cpf.replace(/\D/g, '');
-  return cleaned.length === 11;
+  if (cleaned.length !== 11) return false;
+
+  // Rejeita sequências com todos os dígitos repetidos (ex: 111.111.111-11, 000.000.000-00)
+  if (/^(\d)\1{10}$/.test(cleaned)) return false;
+
+  // Validação do 1º dígito verificador
+  let sum = 0;
+  for (let i = 0; i < 9; i++) {
+    sum += parseInt(cleaned.charAt(i), 10) * (10 - i);
+  }
+  let rest = (sum * 10) % 11;
+  if (rest === 10 || rest === 11) rest = 0;
+  if (rest !== parseInt(cleaned.charAt(9), 10)) return false;
+
+  // Validação do 2º dígito verificador
+  sum = 0;
+  for (let i = 0; i < 10; i++) {
+    sum += parseInt(cleaned.charAt(i), 10) * (11 - i);
+  }
+  rest = (sum * 10) % 11;
+  if (rest === 10 || rest === 11) rest = 0;
+  if (rest !== parseInt(cleaned.charAt(10), 10)) return false;
+
+  return true;
 };
 
 // Formata CPF com máscara

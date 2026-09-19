@@ -12,7 +12,7 @@ export default defineConfig({
   workers: 1,
   reporter: process.env.CI
     ? [['list'], ['html', { open: 'never', outputFolder: 'playwright-report' }]]
-    : [['list'], ['html', { open: 'on-failure' }]],
+    : [['list'], ['html', { open: 'never' }]],
 
   use: {
     baseURL: process.env.PLAYWRIGHT_TEST_BASE_URL || 'http://localhost:3000',

@@ -8,6 +8,7 @@ import {
   sortBy,
   truncateHash,
   maskCPF,
+  isValidCPF,
   generateTransactionsCSV,
   calculateCPRSimulation,
   copyToClipboard,
@@ -67,6 +68,25 @@ describe('utils - Funções Utilitárias e de Formatação', () => {
     it('deve mascarar CPF para preservar privacidade', () => {
       const cpf = '12345678900';
       expect(maskCPF(cpf)).toBe('***456.789-**');
+    });
+
+    it('deve validar CPF corretamente usando algoritmo Módulo 11', () => {
+      // CPFs válidos conhecidos (algoritmo Módulo 11)
+      expect(isValidCPF('52998224725')).toBe(true);
+      expect(isValidCPF('529.982.247-25')).toBe(true);
+
+      // CPFs inválidos (tamanho incorreto)
+      expect(isValidCPF('12345')).toBe(false);
+      expect(isValidCPF('1234567890123')).toBe(false);
+
+      // CPFs inválidos com dígitos repetidos
+      expect(isValidCPF('11111111111')).toBe(false);
+      expect(isValidCPF('00000000000')).toBe(false);
+      expect(isValidCPF('99999999999')).toBe(false);
+
+      // CPFs com dígitos verificadores incorretos
+      expect(isValidCPF('52998224726')).toBe(false);
+      expect(isValidCPF('12345678900')).toBe(false);
     });
   });
 

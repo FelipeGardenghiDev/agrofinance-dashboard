@@ -102,8 +102,6 @@ export interface AgroFinanceStore {
   toggleSimulateOfflineMode: () => void;
 }
 
-export type FeeAgroStore = AgroFinanceStore;
-
 export const useAgroFinanceStore = create<AgroFinanceStore>()(
   persist(
     (set, get) => ({
@@ -459,7 +457,6 @@ export const useAgroFinanceStore = create<AgroFinanceStore>()(
         if (typeof window !== 'undefined') {
           try {
             localStorage.removeItem('agrofinance-storage-v1');
-            localStorage.removeItem('feeagro-storage-v1');
           } catch {}
         }
       },
@@ -1024,7 +1021,4 @@ export const useAgroFinanceStore = create<AgroFinanceStore>()(
     }
   )
 );
-
-// Alias de retrocompatibilidade
-export const useFeeAgroStore = useAgroFinanceStore;
 

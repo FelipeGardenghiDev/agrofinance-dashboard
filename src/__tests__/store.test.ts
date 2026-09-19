@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { useAgroFinanceStore, useFeeAgroStore } from '../lib/store';
+import { useAgroFinanceStore } from '../lib/store';
 import { mockAccount, mockPortfolio, mockTransactions } from '../lib/mockData';
 
 describe('useAgroFinanceStore - Gerenciamento de Estado e Reatividade', () => {
@@ -246,9 +246,5 @@ describe('useAgroFinanceStore - Gerenciamento de Estado e Reatividade', () => {
     const notifsAfterDep = useAgroFinanceStore.getState().notifications;
     expect(notifsAfterDep.length).toBe(countBefore + 2);
     expect(notifsAfterDep[0].title).toContain('Depósito');
-  });
-
-  it('deve manter compatibilidade retroativa com useFeeAgroStore', () => {
-    expect(useFeeAgroStore).toBe(useAgroFinanceStore);
   });
 });
