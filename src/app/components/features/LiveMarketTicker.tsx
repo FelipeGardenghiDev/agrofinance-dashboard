@@ -9,10 +9,16 @@ export default function LiveMarketTicker() {
   const isLiveMarketActive = useAgroFinanceStore((state) => state.isLiveMarketActive);
   const toggleLiveMarket = useAgroFinanceStore((state) => state.toggleLiveMarket);
   const applyMarketTick = useAgroFinanceStore((state) => state.applyMarketTick);
+  const syncRealMarketQuotes = useAgroFinanceStore((state) => state.syncRealMarketQuotes);
   const addToast = useAgroFinanceStore((state) => state.addToast);
 
   const [flashing, setFlashing] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Sincronização inicial de cotações reais via API Route Handler
+  useEffect(() => {
+    syncRealMarketQuotes();
+  }, [syncRealMarketQuotes]);
 
   // Intervalo de mercado ao vivo (a cada 7 segundos)
   useEffect(() => {
@@ -73,6 +79,7 @@ export default function LiveMarketTicker() {
               {isLiveMarketActive ? 'AO VIVO' : 'PAUSADO'}
             </span>
             <span className="text-[10px] text-slate-500 hidden md:inline">| B3 & CBOT</span>
+            <span className="text-[10px] text-emerald-400 font-semibold hidden lg:inline">✦ PTAX Real</span>
           </div>
 
           {/* Botão Anterior do Carrossel */}

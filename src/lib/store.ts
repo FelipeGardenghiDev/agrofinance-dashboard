@@ -95,6 +95,7 @@ export interface AgroFinanceStore {
   // Ações de Mercado ao Vivo / Streaming Ticker
   toggleLiveMarket: () => void;
   applyMarketTick: () => void;
+  syncRealMarketQuotes: () => Promise<void>;
 
   // Ações de Modo Campo & Resiliência Offline
   isOfflineFieldMode: boolean;
@@ -954,6 +955,32 @@ export const useAgroFinanceStore = create<AgroFinanceStore>()(
             totalValue: Number(newTotalPortfolioValue.toFixed(2)),
           },
         });
+      },
+
+      syncRealMarketQuotes: async () => {
+        try {
+          const res = await fetch('/api/quotes');
+          if (!res.ok) return;
+          const json = await res.json();
+          if (json.success && json.data) {
+            const state = get();
+            const updatedQuotes = state.marketQuotes.map((q) => {
+              if (q.symbol === 'USD/BRL') {
+                return {
+                  ...q,
+                  price: json.data.price,
+                  change24h: json.data.change24h,
+                  lastDirection: (json.data.change24h >= 0 ? 'up' : 'down') as 'up' | 'down',
+                  updatedAt: json.data.updatedAt,
+                };
+              }
+              return q;
+            });
+            set({ marketQuotes: updatedQuotes });
+          }
+        } catch {
+          // Modo offline ou falha de rede preserva estado resiliente local
+        }
       },
 
       setOfflineFieldMode: (val: boolean) => {
