@@ -6,15 +6,16 @@
 ![React](https://img.shields.io/badge/React-19.2.3-blue?style=flat-square&logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue?style=flat-square&logo=typescript)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-38bdf8?style=flat-square&logo=tailwind-css)
-![Vitest](https://img.shields.io/badge/Vitest-95_Unit_Passing-729B1B?style=flat-square&logo=vitest)
+![Vitest](https://img.shields.io/badge/Vitest-98_Unit_Passing-729B1B?style=flat-square&logo=vitest)
 ![Playwright](https://img.shields.io/badge/Playwright-20_E2E_Passing-45ba4b?style=flat-square&logo=playwright)
-![Total Tests](https://img.shields.io/badge/Tests-115_Passing_Total-success?style=flat-square)
-![Coverage](https://img.shields.io/badge/Coverage-86.17%25_V8-success?style=flat-square)
+![Total Tests](https://img.shields.io/badge/Tests-118_Passing_Total-success?style=flat-square)
+![Coverage](https://img.shields.io/badge/Coverage-85.8%25_V8-success?style=flat-square)
+![API Route](https://img.shields.io/badge/Route_Handler-BFF_Quotes_Live-blue?style=flat-square)
 ![PWA](https://img.shields.io/badge/PWA-Offline_Field_Mode-orange?style=flat-square)
 
 > 🚀 **Aplicação em Produção:** [https://agrofinance-dashboard-dev.vercel.app/dashboard](https://agrofinance-dashboard-dev.vercel.app/dashboard)
 
-Plataforma bancária digital e de gestão de **Real World Assets (RWA)** voltada ao agronegócio brasileiro (commodities tokenizadas como Soja e Milho), derivativos agro (Hedge B3/CBOT), streaming de cotações e Modo Campo offline (PWA), construída com arquitetura limpa e **115 testes automatizados (100% passing)**.
+Plataforma bancária digital e de gestão de **Real World Assets (RWA)** voltada ao agronegócio brasileiro (commodities tokenizadas como Soja e Milho), derivativos agro (Hedge B3/CBOT), streaming de cotações com API Route Handler (BFF) do Bacen/B3, OpenGraph dinâmico e Modo Campo offline (PWA), construída com arquitetura limpa e **118 testes automatizados (100% passing)**.
 
 ---
 
