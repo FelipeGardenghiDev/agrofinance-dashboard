@@ -234,7 +234,7 @@ export default function HedgePage() {
               </span>
             </div>
             <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
-              Trave preços mínimos de venda (*Strike Price*) para sua safra, mitigando riscos de queda de cotações em Chicago e oscilações do Dólar PTAX.
+              Trave preços mínimos de venda (<span className="font-semibold italic">Strike Price</span>) para sua safra, mitigando riscos de queda de cotações em Chicago e oscilações do Dólar PTAX.
             </p>
           </div>
 
@@ -264,10 +264,16 @@ export default function HedgePage() {
               <span>Proteção Patrimonial RWA</span>
             </div>
             <h2 className="text-lg font-black mb-1">
-              Como funciona o Hedge com Opções de Venda (*Put*)?
+              Como funciona o Hedge com Opções de Venda (<span className="italic">Put</span>)?
             </h2>
             <p className="text-xs text-gray-200 leading-relaxed">
-              O produtor rural adquire o **direito de vender sua safra por um preço mínimo garantido** pagando apenas um prêmio de proteção (débito em conta). Se a cotação no mercado físico cair, a B3 liquida a diferença financeira diretamente no seu saldo bancário (**In The Money**). Se a cotação subir, o produtor vende a mercado colhendo todo o lucro adicional!
+              O produtor rural adquire o{' '}
+              <strong className="text-white font-bold underline decoration-green-400/50 underline-offset-2">
+                direito de vender sua safra por um preço mínimo garantido
+              </strong>{' '}
+              pagando apenas um prêmio de proteção (débito em conta). Se a cotação no mercado físico cair, a B3 liquida a diferença financeira diretamente no seu saldo bancário (
+              <strong className="text-amber-300 font-bold">In The Money</strong>
+              ). Se a cotação subir, o produtor vende a mercado colhendo todo o lucro adicional!
             </p>
           </div>
         </div>
@@ -442,7 +448,7 @@ export default function HedgePage() {
                 <div>
                   <div className="flex justify-between items-center mb-1.5">
                     <label className="text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                      3. Preço Mínimo Garantido — *Strike* (R$ / saca)
+                      3. Preço Mínimo Garantido — Strike Price (R$ / saca)
                     </label>
                     <span className="text-xs text-agro-verde-musgo font-semibold">
                       Spot Atual: R$ {selectedDerivative.spotPrice.toFixed(2)}
