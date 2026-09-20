@@ -221,7 +221,10 @@ export default function CreditPage() {
 
               {/* Valor Solicitado */}
               <div className="space-y-2">
-                <label className="block text-xs font-bold text-gray-800 dark:text-gray-200">
+                <label
+                  htmlFor="requested-amount"
+                  className="block text-xs font-bold text-gray-800 dark:text-gray-200"
+                >
                   Valor Desejado (R$)
                 </label>
                 <div className="relative">
@@ -229,6 +232,9 @@ export default function CreditPage() {
                     R$
                   </span>
                   <input
+                    id="requested-amount"
+                    name="requestedAmount"
+                    aria-label="Valor Desejado em Reais"
                     type="number"
                     min="1000"
                     step="1000"
