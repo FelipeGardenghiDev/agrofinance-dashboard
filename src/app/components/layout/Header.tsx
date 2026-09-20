@@ -28,26 +28,26 @@ const Header = () => {
 
   return (
     <header className="bg-agro-azul-escuro border-b border-agro-azul-claro/20 sticky top-0 z-50 shadow-md">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-7xl xl:max-w-[1440px] 2xl:max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link href="/dashboard" className="flex items-center space-x-3 group">
-            <div className="bg-white/10 group-hover:bg-white/20 transition-colors w-10 h-10 rounded-xl flex items-center justify-center border border-white/20">
+          <Link href="/dashboard" className="flex items-center space-x-3 group shrink-0">
+            <div className="bg-white/10 group-hover:bg-white/20 transition-colors w-10 h-10 rounded-xl flex items-center justify-center border border-white/20 shrink-0">
               <span className="text-xl">🌾</span>
             </div>
             <div>
-              <h1 className="text-lg font-black tracking-tight text-white flex items-center gap-1.5">
+              <h1 className="text-lg font-black tracking-tight text-white flex items-center gap-1.5 whitespace-nowrap">
                 AgroFinance
                 <span className="text-[10px] uppercase font-bold tracking-widest bg-agro-verde-musgo/80 text-white px-1.5 py-0.5 rounded">
                   RWA
                 </span>
               </h1>
-              <p className="text-[11px] text-gray-300">Crédito & Agronegócio Digital</p>
+              <p className="text-[11px] text-gray-300 hidden lg:block whitespace-nowrap">Crédito & Agronegócio Digital</p>
             </div>
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-1">
+          <nav className="hidden lg:flex items-center space-x-1 shrink-0">
             <NavLink href="/dashboard" active={pathname === '/dashboard'}>
               Dashboard
             </NavLink>
@@ -71,7 +71,7 @@ const Header = () => {
           </nav>
 
           {/* User Menu & Reset Demo Action */}
-          <div className="hidden md:flex items-center space-x-3">
+          <div className="hidden lg:flex items-center space-x-2.5 xl:space-x-3 shrink-0">
             {/* Notification Center */}
             <NotificationCenter />
 
@@ -87,33 +87,37 @@ const Header = () => {
                   : 'Simular Modo Campo (Offline Resiliente PWA)'
               }
               data-testid="header-offline-toggle"
-              className={`text-xs px-2.5 py-1.5 rounded-lg border transition-all flex items-center gap-1.5 cursor-pointer shadow-xs ${
+              className={`text-xs px-2.5 py-1.5 rounded-lg border transition-all flex items-center gap-1.5 cursor-pointer shadow-xs whitespace-nowrap shrink-0 ${
                 isOfflineFieldMode
                   ? 'bg-amber-500/25 text-amber-300 border-amber-500/80 ring-1 ring-amber-400 font-semibold'
                   : 'border-white/20 text-gray-200 hover:text-white hover:bg-white/10 hover:border-white/40 active:scale-95'
               }`}
             >
               <span>{isOfflineFieldMode ? '📡' : '🌾'}</span>
-              <span>{isOfflineFieldMode ? 'Modo Campo (ON)' : 'Modo Campo'}</span>
+              <span className="hidden xl:inline">
+                {isOfflineFieldMode ? 'Modo Campo (ON)' : 'Modo Campo'}
+              </span>
             </button>
 
             {/* Botão de reset para recrutadores */}
             <button
               onClick={handleReset}
               title="Restaurar dados iniciais da demo"
-              className="text-xs px-2.5 py-1.5 rounded-lg border border-white/20 text-gray-200 hover:text-white hover:bg-white/10 hover:border-white/40 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
+              className="text-xs px-2.5 py-1.5 rounded-lg border border-white/20 text-gray-200 hover:text-white hover:bg-white/10 hover:border-white/40 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shadow-xs whitespace-nowrap shrink-0"
             >
               <span className={resetFeedback ? 'animate-spin inline-block' : 'inline-block'}>🔄</span>
-              <span>{resetFeedback ? 'Dados Resetados!' : 'Restaurar Demo'}</span>
+              <span className="hidden xl:inline">
+                {resetFeedback ? 'Dados Resetados!' : 'Restaurar Demo'}
+              </span>
             </button>
 
-            <div className="text-right">
+            <div className="text-right shrink-0 whitespace-nowrap hidden sm:block">
               <p className="text-sm font-bold text-white">{account.ownerName.split(' ')[0]}</p>
               <p className="text-xs text-green-300 font-medium">
                 {formatCurrency(account.availableBalance)}
               </p>
             </div>
-            <div className="w-10 h-10 bg-agro-verde-musgo border border-white/20 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-sm">
+            <div className="w-10 h-10 bg-agro-verde-musgo border border-white/20 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-sm shrink-0">
               {account.ownerName
                 .split(' ')
                 .slice(0, 2)
@@ -123,7 +127,7 @@ const Header = () => {
           </div>
 
           {/* Mobile Right Bar: Notifications & Menu Toggle */}
-          <div className="flex md:hidden items-center space-x-2">
+          <div className="flex lg:hidden items-center space-x-2">
             <NotificationCenter />
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -144,7 +148,7 @@ const Header = () => {
 
       {/* Mobile menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-white/10 bg-agro-azul-escuro px-4 py-4 space-y-3">
+        <div className="lg:hidden border-t border-white/10 bg-agro-azul-escuro px-4 py-4 space-y-3">
           <nav className="space-y-1">
             <MobileNavLink
               href="/dashboard"
@@ -236,7 +240,7 @@ const NavLink = ({
   return (
     <Link
       href={href}
-      className={`px-3.5 py-2 rounded-lg text-sm font-semibold transition-all ${
+      className={`px-2.5 xl:px-3.5 py-1.5 xl:py-2 rounded-lg text-xs xl:text-sm font-semibold transition-all whitespace-nowrap shrink-0 inline-flex items-center ${
         active
           ? 'bg-white/15 text-white shadow-inner font-bold'
           : 'text-gray-300 hover:text-white hover:bg-white/10'

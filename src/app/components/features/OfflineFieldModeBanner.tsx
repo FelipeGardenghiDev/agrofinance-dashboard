@@ -47,7 +47,7 @@ export default function OfflineFieldModeBanner() {
       aria-live="polite"
       className="bg-linear-to-r from-amber-600 via-amber-700 to-amber-800 text-white text-xs py-2 px-4 shadow-md sticky top-16 z-40 border-b border-amber-500/30"
     >
-      <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
+      <div className="w-full max-w-7xl xl:max-w-[1440px] 2xl:max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
         <div className="flex items-center gap-2.5">
           <span className="w-2.5 h-2.5 rounded-full bg-amber-200 animate-ping inline-block" />
           <span className="font-black tracking-wider uppercase bg-amber-900/60 px-2 py-0.5 rounded text-[10px] border border-amber-400/40">

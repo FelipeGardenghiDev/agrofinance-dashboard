@@ -65,7 +65,7 @@ export default function LiveMarketTicker() {
       aria-label="Cotações de mercado ao vivo B3 e CBOT"
       className="bg-slate-900 border-b border-slate-800 text-slate-200 text-xs py-2 px-3 sm:px-6 select-none shadow-inner"
     >
-      <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
+      <div className="w-full max-w-7xl xl:max-w-[1440px] 2xl:max-w-[1600px] mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
         {/* Lado Esquerdo: Badge AO VIVO + Carrossel de Cotações com Botões Sutis */}
         <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1">
           {/* Badge Ao Vivo */}
