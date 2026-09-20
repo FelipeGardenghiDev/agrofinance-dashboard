@@ -177,10 +177,10 @@ export default function DashboardPage() {
           <div className="flex items-center gap-2 shrink-0">
             <Link
               href="/hedge"
-              className="text-xs font-bold px-4 py-2.5 rounded-xl bg-white text-agro-verde-escuro hover:bg-gray-100 active:scale-95 transition-all shadow-sm flex items-center gap-1.5 cursor-pointer"
+              className="text-xs font-extrabold px-4 py-2.5 rounded-xl bg-white text-agro-azul-escuro hover:bg-gray-100 hover:text-agro-azul active:scale-95 transition-all shadow-sm flex items-center gap-1.5 cursor-pointer shrink-0"
             >
               <span>Gerenciar Travas B3</span>
-              <span>→</span>
+              <span aria-hidden="true">→</span>
             </Link>
           </div>
         </div>
