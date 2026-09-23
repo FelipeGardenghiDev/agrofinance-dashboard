@@ -156,16 +156,16 @@ agrofinance-dashboard/
 
 ## 🧪 Pirâmide de Testes Automatizados & Cobertura de Código
 
-A plataforma conta com **115 testes automatizados aprovados (100% passing)** e relatório formal de cobertura V8 com **86.17% de linhas cobertas**:
+A plataforma conta com **123 testes automatizados aprovados (100% passing)** e relatório formal de cobertura V8 com **85.8% de linhas cobertas**:
 
 ```bash
-# Executar todos os 95 testes unitários e de componentes
+# Executar todos os 98 testes unitários e de componentes
 pnpm test
 
 # Gerar relatório formal de cobertura de código (V8 Engine)
 pnpm test:coverage
 
-# Executar todos os 20 testes End-to-End (Playwright Headless)
+# Executar todos os 25 testes End-to-End (Playwright Headless)
 pnpm test:e2e
 
 # Executar suíte completa unificada (Unitários + E2E)
