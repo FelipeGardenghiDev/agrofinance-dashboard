@@ -9,6 +9,8 @@ import Badge from '../components/ui/Badge';
 import { useAgroFinanceStore } from '@/lib/store';
 import { formatCurrency, formatDate, calculateCPRSimulation, copyToClipboard } from '@/lib/utils';
 import type { CPRContract } from '@/lib/types';
+import { MLCommodityEngine } from '@/lib/mlForecasting';
+import { SupabaseAgroTelemetry } from '@/lib/supabaseAgro';
 
 export default function CreditPage() {
   const account = useAgroFinanceStore((state) => state.account);
@@ -43,6 +45,18 @@ export default function CreditPage() {
     if (!selectedAsset) return null;
     return calculateCPRSimulation(requestedAmount, termMonths, selectedAsset, 11.5, 0.70);
   }, [requestedAmount, termMonths, selectedAsset]);
+
+  // Stress Testing de Colateral com 1.000 trajetórias de Monte Carlo
+  const stressTest = useMemo(() => {
+    if (!simulation || !selectedAsset) return null;
+    return MLCommodityEngine.runMonteCarloCollateralStress({
+      lockedSacas: simulation.requiredTokens,
+      spotPrice: selectedAsset.pricePerToken,
+      cprDebtTotal: simulation.totalRepayment,
+      daysToMaturity: termMonths * 30,
+      numSimulations: 1000,
+    });
+  }, [simulation, selectedAsset, termMonths]);
 
   // Limite total de crédito baseado no portfólio (LTV 70%)
   const maxCreditLimit = useMemo(() => {
@@ -82,6 +96,19 @@ export default function CreditPage() {
         type: 'error',
         title: 'Erro na Contratação',
         message: res.error || 'Não foi possível aprovar a CPR.',
+      });
+    } else {
+      SupabaseAgroTelemetry.emitOpsEvent({
+        eventType: 'CPR_ISSUED',
+        payload: {
+          contractNumber: res.contract?.contractNumber,
+          amount: requestedAmount,
+          termMonths,
+          assetId: selectedAsset.assetId,
+          collateralQuantity: simulation.requiredTokens,
+          effectiveLtv: simulation.effectiveLtv,
+          stressBreachProbability: stressTest?.breachProbabilityPercent,
+        },
       });
     }
   };
@@ -403,6 +430,40 @@ export default function CreditPage() {
                       {formatCurrency(simulation.totalRepayment)}
                     </span>
                   </div>
+
+                  {/* Stress Testing Quantitativo (Monte Carlo 1.000 iterações) */}
+                  {stressTest && (
+                    <div className="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700/80 space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-[11px] text-gray-800 dark:text-gray-200 flex items-center gap-1">
+                          <span>🎲</span> Stress Testing Monte Carlo (1.000 trajetórias)
+                        </span>
+                        <span
+                          className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                            stressTest.isHighRisk
+                              ? 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-400'
+                              : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400'
+                          }`}
+                        >
+                          {stressTest.isHighRisk ? 'Risco Elevado' : 'Colateral Seguro'}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 pt-1 text-[11px]">
+                        <div>
+                          <span className="text-gray-500 dark:text-gray-400 block text-[10px]">Risco Quebra LTV</span>
+                          <span className="font-bold text-gray-900 dark:text-white">
+                            {stressTest.breachProbabilityPercent}% prob.
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-gray-500 dark:text-gray-400 block text-[10px]">Piso P5 Estresse</span>
+                          <span className="font-bold text-gray-900 dark:text-white">
+                            {formatCurrency(stressTest.stressCollateralValueP5)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   <div className="p-3 rounded-xl bg-blue-50/70 dark:bg-blue-950/20 border border-blue-200/60 dark:border-blue-900/40 text-[11px] text-blue-800 dark:text-blue-300 space-y-1">
                     <p className="font-bold flex items-center gap-1">

@@ -15,6 +15,8 @@ import {
   copyToClipboard 
 } from '@/lib/utils';
 import type { HedgeType, HedgeContract } from '@/lib/types';
+import TradingViewCommodityChart from '../components/features/TradingViewCommodityChart';
+import { SupabaseAgroTelemetry } from '@/lib/supabaseAgro';
 
 interface AvailableDerivative {
   id: string;
@@ -138,6 +140,13 @@ export default function HedgePage() {
     return activeContracts.filter((c) => c.strikePrice > c.currentSpotPrice).length;
   }, [activeContracts]);
 
+  const chartSymbol = useMemo(() => {
+    if (selectedDerivative.symbol.includes('SOJA')) return 'SOJA-PR';
+    if (selectedDerivative.symbol.includes('MLHO')) return 'MILHO-B3';
+    if (selectedDerivative.symbol.includes('USD')) return 'USD/BRL';
+    return 'SOJA-PR';
+  }, [selectedDerivative.symbol]);
+
   // Ao trocar ativo selecionado, atualiza strike padrão para o Spot
   const handleSelectDerivative = (id: string) => {
     setSelectedDerivativeId(id);
@@ -186,6 +195,19 @@ export default function HedgePage() {
         type: 'error',
         title: 'Falha na Contratação',
         message: res.error || 'Não foi possível registrar o contrato.',
+      });
+    } else {
+      SupabaseAgroTelemetry.emitOpsEvent({
+        eventType: 'HEDGE_CONTRACT_CREATED',
+        payload: {
+          contractNumber: res.contract?.contractNumber,
+          type: simulation.type,
+          commodityName: simulation.commodityName,
+          quantitySacas: simulation.quantitySacas,
+          strikePrice: simulation.strikePrice,
+          premiumCost: simulation.premiumCost,
+          totalProtectedValue: simulation.totalProtectedValue,
+        },
       });
     }
   };
@@ -351,6 +373,12 @@ export default function HedgePage() {
             </div>
           </Card>
         </div>
+
+        {/* Gráfico Institucional TradingView com Projeções Quant / ML */}
+        <TradingViewCommodityChart
+          symbol={chartSymbol}
+          initialSpotPrice={selectedDerivative.spotPrice}
+        />
 
         {/* Seção Principal: Simulador Interativo + Painel Comparativo */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">

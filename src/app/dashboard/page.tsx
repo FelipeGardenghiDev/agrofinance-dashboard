@@ -10,6 +10,7 @@ import { formatCurrency, formatPerformance, getPerformanceColor, translateStatus
 import Link from 'next/link';
 import PortfolioAllocationChart from '../components/features/PortfolioAllocationChart';
 import CommodityTrendsChart from '../components/features/CommodityTrendsChart';
+import SmartHedgeAdvisorCard from '../components/features/SmartHedgeAdvisorCard';
 
 export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
@@ -151,6 +152,9 @@ export default function DashboardPage() {
             </div>
           </Card>
         </div>
+
+        {/* Smart Hedge Advisor (IA Quant) */}
+        <SmartHedgeAdvisorCard />
 
         {/* Banner de Risco & Hedge B3 */}
         <div className="bg-linear-to-r from-agro-azul-escuro via-agro-verde-escuro to-agro-azul-escuro rounded-2xl p-4 sm:p-5 text-white shadow-md flex flex-col md:flex-row md:items-center md:justify-between gap-4 border border-white/10">

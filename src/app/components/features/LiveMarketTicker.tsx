@@ -20,17 +20,54 @@ export default function LiveMarketTicker() {
     syncRealMarketQuotes();
   }, [syncRealMarketQuotes]);
 
-  // Intervalo de mercado ao vivo (a cada 7 segundos)
+  // Streaming SSE em tempo real com fallback para intervalo periódico
   useEffect(() => {
     if (!isLiveMarketActive) return;
 
-    const interval = setInterval(() => {
-      applyMarketTick();
-      setFlashing(true);
-      setTimeout(() => setFlashing(false), 1200);
-    }, 7000);
+    if (typeof window === 'undefined' || typeof EventSource === 'undefined') {
+      const interval = setInterval(() => {
+        applyMarketTick();
+        setFlashing(true);
+        setTimeout(() => setFlashing(false), 1200);
+      }, 7000);
+      return () => clearInterval(interval);
+    }
 
-    return () => clearInterval(interval);
+    let es: EventSource | null = null;
+    let fallbackInterval: NodeJS.Timeout | null = null;
+
+    try {
+      es = new EventSource('/api/quotes/stream');
+      es.onmessage = () => {
+        applyMarketTick();
+        setFlashing(true);
+        setTimeout(() => setFlashing(false), 1200);
+      };
+      es.onerror = () => {
+        if (es) {
+          es.close();
+          es = null;
+        }
+        if (!fallbackInterval) {
+          fallbackInterval = setInterval(() => {
+            applyMarketTick();
+            setFlashing(true);
+            setTimeout(() => setFlashing(false), 1200);
+          }, 7000);
+        }
+      };
+    } catch {
+      fallbackInterval = setInterval(() => {
+        applyMarketTick();
+        setFlashing(true);
+        setTimeout(() => setFlashing(false), 1200);
+      }, 7000);
+    }
+
+    return () => {
+      if (es) es.close();
+      if (fallbackInterval) clearInterval(fallbackInterval);
+    };
   }, [isLiveMarketActive, applyMarketTick]);
 
   const handleManualTick = () => {
