@@ -8,18 +8,45 @@ import Spinner from '../components/ui/Spinner';
 import { useAgroFinanceStore } from '@/lib/store';
 import { formatCurrency, formatPerformance, getPerformanceColor, translateStatus, formatRelativeDate } from '@/lib/utils';
 import Link from 'next/link';
+import Button from '../components/ui/Button';
 import PortfolioAllocationChart from '../components/features/PortfolioAllocationChart';
 import CommodityTrendsChart from '../components/features/CommodityTrendsChart';
 import SmartHedgeAdvisorCard from '../components/features/SmartHedgeAdvisorCard';
+import AgroBarterPowerCard from '../components/features/AgroBarterPowerCard';
+import WhatIfMacroSimulator from '../components/features/WhatIfMacroSimulator';
+import RiskAuditDossierModal from '../components/features/RiskAuditDossierModal';
+import { BrowserNotificationManager } from '@/lib/browserNotifications';
 
 export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
+  const [isDossierOpen, setIsDossierOpen] = useState(false);
   const account = useAgroFinanceStore((state) => state.account);
   const portfolio = useAgroFinanceStore((state) => state.portfolio);
   const kyc = useAgroFinanceStore((state) => state.kyc);
   const transactions = useAgroFinanceStore((state) => state.transactions);
   const cprContracts = useAgroFinanceStore((state) => state.cprContracts || []);
   const hedgeContracts = useAgroFinanceStore((state) => state.hedgeContracts || []);
+  const addToast = useAgroFinanceStore((state) => state.addToast);
+
+  const handleEnableNotifications = async () => {
+    const granted = await BrowserNotificationManager.requestPermission();
+    if (granted) {
+      BrowserNotificationManager.notify('🔔 Alertas AgroFinance Ativados', {
+        body: 'Você receberá avisos automáticos de chamadas de margem e oportunidades de hedge na B3.',
+      });
+      addToast({
+        type: 'success',
+        title: 'Alertas Ativados!',
+        message: 'Notificações no navegador ativadas com sucesso.',
+      });
+    } else {
+      addToast({
+        type: 'warning',
+        title: 'Permissão de Alertas',
+        message: 'Habilite as notificações no navegador para receber avisos de risco.',
+      });
+    }
+  };
 
   const activeCPRs = useMemo(() => {
     return cprContracts.filter((c) => c.status === 'active');
@@ -67,12 +94,33 @@ export default function DashboardPage() {
   return (
     <MainLayout>
       <div className="space-y-8">
-        {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-            Olá, {account?.ownerName.split(' ')[0]}! 👋
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">Bem-vindo(a) ao seu dashboard de investimentos RWA</p>
+        {/* Header com Ações Institucionais */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+              Olá, {account?.ownerName.split(' ')[0]}! 👋
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">Bem-vindo(a) ao seu dashboard de investimentos RWA</p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleEnableNotifications}
+              className="text-xs"
+            >
+              🔔 Alertas Preditivos
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => setIsDossierOpen(true)}
+              className="text-xs font-bold"
+            >
+              📄 Dossiê Bancário (PDF)
+            </Button>
+          </div>
         </div>
 
         {/* Cards de Resumo */}
@@ -189,6 +237,9 @@ export default function DashboardPage() {
           </div>
         </div>
 
+        {/* Poder de Compra Agro & Barter (Relação de Troca de Insumos) */}
+        <AgroBarterPowerCard />
+
         {/* Inteligência de Mercado & Performance RWA */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
           <div className="lg:col-span-5">
@@ -201,6 +252,9 @@ export default function DashboardPage() {
             <CommodityTrendsChart />
           </div>
         </div>
+
+        {/* Simulador de Cenários Macroeconômicos (What-If Analysis) */}
+        <WhatIfMacroSimulator />
 
         {/* Ativos RWA */}
         <div>
@@ -338,6 +392,11 @@ export default function DashboardPage() {
           </Card>
         </div>
       </div>
+
+      <RiskAuditDossierModal
+        isOpen={isDossierOpen}
+        onClose={() => setIsDossierOpen(false)}
+      />
     </MainLayout>
   );
 }

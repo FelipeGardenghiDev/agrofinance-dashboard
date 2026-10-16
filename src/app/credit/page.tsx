@@ -11,6 +11,7 @@ import { formatCurrency, formatDate, calculateCPRSimulation, copyToClipboard } f
 import type { CPRContract } from '@/lib/types';
 import { MLCommodityEngine } from '@/lib/mlForecasting';
 import { SupabaseAgroTelemetry } from '@/lib/supabaseAgro';
+import RiskAuditDossierModal from '../components/features/RiskAuditDossierModal';
 
 export default function CreditPage() {
   const account = useAgroFinanceStore((state) => state.account);
@@ -26,6 +27,7 @@ export default function CreditPage() {
   const [termMonths, setTermMonths] = useState<6 | 12 | 24>(12);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [settlingId, setSettlingId] = useState<string | null>(null);
+  const [isDossierOpen, setIsDossierOpen] = useState(false);
 
   // Ativo selecionado para colateral
   const selectedAsset = useMemo(() => {
@@ -175,7 +177,15 @@ export default function CreditPage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsDossierOpen(true)}
+              className="text-xs font-bold text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-700 hover:bg-gray-100"
+            >
+              📄 Dossiê Bancário (PDF)
+            </Button>
             <Link href="/new-operation">
               <Button variant="outline" size="sm">
                 + Comprar Grãos (Aporte)
@@ -612,6 +622,11 @@ export default function CreditPage() {
           </Card>
         </div>
       </div>
+
+      <RiskAuditDossierModal
+        isOpen={isDossierOpen}
+        onClose={() => setIsDossierOpen(false)}
+      />
     </MainLayout>
   );
 }
