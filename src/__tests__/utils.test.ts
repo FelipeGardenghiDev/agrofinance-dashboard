@@ -10,6 +10,7 @@ import {
   maskCPF,
   isValidCPF,
   generateTransactionsCSV,
+  generateAgroERPAccountingCSV,
   calculateCPRSimulation,
   copyToClipboard,
   downloadCSV,
@@ -135,6 +136,49 @@ describe('utils - Funções Utilitárias e de Formatação', () => {
       expect(csv).toContain('"15400,50"');
       expect(csv).toContain('"Concluída"');
       expect(csv).toContain('"0xabc123"');
+    });
+  });
+
+  describe('generateAgroERPAccountingCSV', () => {
+    it('deve gerar plano de contas agro e centros de custo compatíveis com TOTVS Agro / Siagri', () => {
+      const mockTx = [
+        {
+          id: 'TX-AGRO-01',
+          date: '2026-03-10T14:30:00Z',
+          description: 'Venda de Soja RWA',
+          type: 'IN' as const,
+          category: 'investment' as const,
+          amount: 50000.0,
+          status: 'completed' as const,
+          fromAddress: '0x123',
+          toAddress: '0x456',
+          txHash: '0xabc123',
+          memo: 'Liquidacao RWA',
+        },
+        {
+          id: 'TX-AGRO-02',
+          date: '2026-03-11T10:00:00Z',
+          description: 'Compra Insumo Milho',
+          type: 'OUT' as const,
+          category: 'transfer' as const,
+          amount: 12000.0,
+          status: 'completed' as const,
+          fromAddress: '0x456',
+          toAddress: '0x789',
+        },
+      ];
+
+      const csv = generateAgroERPAccountingCSV(mockTx);
+
+      expect(csv.startsWith('\uFEFF')).toBe(true);
+      expect(csv).toContain('Data_Lancamento;Conta_Debito;Conta_Credito;Valor_Liquido_BRL;Historico_Contabil;Documento_Origem;Centro_Custo_Agro;Safra_Referencia;Hash_B3_Autenticidade');
+      expect(csv).toContain('1.1.1.05 - Banco Movimento Agro');
+      expect(csv).toContain('3.1.1.02 - Receita Venda Safra RWA');
+      expect(csv).toContain('CC-01 Lavoura Soja');
+      expect(csv).toContain('Safra 2026/2027');
+      expect(csv).toContain('CC-02 Lavoura Milho');
+      expect(csv).toContain('Safra 2025/2026');
+      expect(csv).toContain('2.1.2.01 - Fornecedores / Insumos');
     });
   });
 

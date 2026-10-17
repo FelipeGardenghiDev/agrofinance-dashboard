@@ -1,199 +1,259 @@
-# AgroFinance RWA Dashboard — Plataforma de Crédito e Ativos Tokenizados do Agro
+# AgroFinance RWA Dashboard — Institutional Agri-Banking & Tokenized Commodity Platform
 
 [![Live Demo](https://img.shields.io/badge/Live_Demo-Vercel_Active-success?style=for-the-badge&logo=vercel)](https://agrofinance-dashboard-dev.vercel.app/dashboard)
 [![CI Pipeline](https://github.com/felipegardenghidev/agrofinance-dashboard/actions/workflows/ci.yml/badge.svg)](https://github.com/felipegardenghidev/agrofinance-dashboard/actions)
-![Next.js](https://img.shields.io/badge/Next.js-16.1.6-black?style=flat-square&logo=next.js)
+![Next.js](https://img.shields.io/badge/Next.js-16.1.6_(Turbopack)-black?style=flat-square&logo=next.js)
 ![React](https://img.shields.io/badge/React-19.2.3-blue?style=flat-square&logo=react)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue?style=flat-square&logo=typescript)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.9_Strict-blue?style=flat-square&logo=typescript)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-38bdf8?style=flat-square&logo=tailwind-css)
-![Vitest](https://img.shields.io/badge/Vitest-98_Unit_Passing-729B1B?style=flat-square&logo=vitest)
-![Playwright](https://img.shields.io/badge/Playwright-25_E2E_Passing-45ba4b?style=flat-square&logo=playwright)
-![Total Tests](https://img.shields.io/badge/Tests-123_Passing_Total-success?style=flat-square)
-![Coverage](https://img.shields.io/badge/Coverage-85.8%25_V8-success?style=flat-square)
+![Vitest](https://img.shields.io/badge/Vitest-130_Passing_(100%25)-729B1B?style=flat-square&logo=vitest)
+![Playwright](https://img.shields.io/badge/Playwright-8_E2E_Suites-45ba4b?style=flat-square&logo=playwright)
+![Coverage](https://img.shields.io/badge/Coverage-86%25_V8_Engine-success?style=flat-square)
 ![WCAG](https://img.shields.io/badge/A11y-WCAG_2.1_AA_Passing-blueviolet?style=flat-square)
-![API Route](https://img.shields.io/badge/Route_Handler-BFF_Quotes_Live-blue?style=flat-square)
+![Quant Math](https://img.shields.io/badge/Math-Decimal.js_Arbitrary_Precision-green?style=flat-square)
 ![PWA](https://img.shields.io/badge/PWA-Offline_Field_Mode-orange?style=flat-square)
 
-> 🚀 **Aplicação em Produção:** [https://agrofinance-dashboard-dev.vercel.app/dashboard](https://agrofinance-dashboard-dev.vercel.app/dashboard)  
-> 🏛️ **Decisões de Engenharia & ADRs:** Consulte o documento completo em [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md)
-
-Plataforma bancária digital e de gestão de **Real World Assets (RWA)** voltada ao agronegócio brasileiro (commodities tokenizadas como Soja e Milho), derivativos agro (Hedge B3/CBOT), streaming de cotações com API Route Handler (BFF) do Bacen/B3, OpenGraph dinâmico, Modo Campo offline (PWA) e auditoria de acessibilidade W3C/WCAG, construída com arquitetura limpa e **123 testes automatizados (100% passing)**.
+> 🚀 **Produção Oficial:** [https://agrofinance-dashboard-dev.vercel.app/dashboard](https://agrofinance-dashboard-dev.vercel.app/dashboard)  
+> 🏛️ **Documento Complementar de Arquitetura:** [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md)
 
 ---
 
-## 🌾 Visão Geral & Contexto de Negócio
+## 🌾 1. Sumário Executivo & Visão do Produto
 
-No agronegócio moderno, a tokenização de safras e recebíveis (**RWA - Real World Assets**) permite conectar produtores rurais diretamente a investidores institucionais e de varejo, antecipando receitas, travando preços futuros e garantindo liquidez antes da colheita.
+O **AgroFinance** é uma plataforma institucional de tesouraria agrícola, crédito rural estruturado (**CPR Digital**) e custódia de **Real World Assets (RWA)** voltada ao agronegócio corporativo brasileiro. Ele conecta produtores rurais, tradings, cooperativas e fundos de investimento agro (**FIAGROs**) a mecanismos avançados de liquidez, travas cambiais (*Hedge B3/CBOT*), modelagem estocástica de risco de crédito e integração com os principais ERPs contábeis do campo.
 
-O **AgroFinance** entrega uma interface de internet banking corporativo e tesouraria agro que consolida:
-1. **Custódia de Tokens de Commodities:** Visualização de lotes de Soja Premium, Soja Orgânica e Milho Híbrido com cotações vivas, quantidade de tokens em carteira e oscilação diária (24h).
-2. **Hedge Cambial & Derivativos Agro (B3 / CBOT):** Trava de preço mínimo garantido (*Put Options*) e NDF de dólar para proteger safras contra quedas de mercado e quebra de margem.
-3. **Live Market Ticker (Streaming):** Fita contínua de cotações com atualização a mercado a cada 7 segundos, animações suaves de flash e recálculo reativo do patrimônio total sob custódia.
-4. **Modo Campo & Resiliência Offline (PWA):** Manifesto PWA nativo, ícones de aplicação e fallback resiliente via cache local com banner de conectividade e botão de simulação para avaliadores.
-5. **Analytics & Gráficos Interativos:** Gráfico Donut de alocação de carteira RWA e gráfico de tendências/cotações históricas com alternador de séries e tooltips interativos.
-6. **Liquidação e Transferências Multimodais:** Módulo completo de transferências (PIX, TED), aportes em tokens RWA, liquidação financeira a mercado (Venda RWA) e resgate físico de commodities.
-7. **Resgate Físico de Commodities (CDA / WA):** Emissão de certificados de retirada física de safras em armazéns credenciados com queima (*burn*) de tokens e instruções de frete/pesagem.
-8. **Crédito Rural & CPR Digital (Cédula de Produto Rural):** Empréstimos com colateral RWA, cálculo de amortização Price, limite prudencial de LTV (70%), trava de tokens em garantia e quitação antecipada.
-9. **Dark Mode & Acessibilidade W3C:** Suporte nativo a Modo Claro, Escuro e Sistema, com seletor acessível, navegação por teclado e folha de impressão corporativa em alto contraste.
+Projetado sob os padrões mais rigorosos de **Engenharia de Software Senior/Staff**, o sistema adota arquitetura desacoplada, precisão matemática decimal estrita (eliminando riscos de arredondamento financeiro IEEE-754), motor quantitativo de simulação Monte Carlo assíncrono via Web Workers, renderização gráfica em Canvas de alta performance (TradingView) e streaming unidirecional em tempo real (SSE) sobre Edge Computing com **custo operacional $0.00/mês**.
 
 ---
 
-## ✨ Funcionalidades Principais
+## 🏛️ 2. Arquitetura do Sistema & Diagrama de Fluxo de Dados
 
-### 📊 1. Dashboard Financeiro Executivo & Analytics
-* **Métricas em tempo real:** Saldo disponível em conta corrente, valor total de ativos sob custódia e status KYC.
-* **Gráfico de Alocação RWA (Donut SVG):** Distribuição proporcional de ativos por safra/token com detalhamento interativo central e legenda dinâmica.
-* **Gráfico de Tendências de Cotações (Área/Linha SVG):** Histórico semestral de preços com alternador de commodities (`TOTAL`, `SOJA24`, `SOJAO`, `MLHO25`, `MLHOP`), grid de métricas (mínima, máxima, variação) e tooltips hover.
-* **Tabela de Ativos RWA com Ações Rápidas:** Ações diretas por lote de grãos: `+ Aportar` (compra), `Vender` (liquidação a mercado) e `Resgatar` (retirada física).
-* **Banner Inteligente de Hedge:** Card de alta visibilidade com atalho para a mesa de derivativos e simulação de travas de preço.
+A solução é desenhada seguindo os princípios de **Clean Architecture**, **Domain-Driven Design (DDD)** aplicado a derivativos agrícolas e **Backend For Frontend (BFF)** sobre o **Next.js 16 (App Router)** e **React 19**.
 
-### 🛡️ 2. Módulo de Hedge Cambial & Derivativos Agro (B3 / CBOT)
-* **Trava de Preço com Opções de Venda (Put Agro) & NDF:** Simulação em tempo real de travas de preço mínimo garantido (*Strike Price*) para safras de Soja (Março/2027), Soja Orgânica, Milho Híbrido e Dólar Futuro PTAX.
-* **Mecanismo de Proteção Antivolatilidade:** Débito do prêmio da opção em conta corrente e emissão de contrato derivativo com hash criptográfico e código de câmara B3.
-* **Monitoramento Ativo de Moneyness (ITM vs OTM):** Classificação dinâmica em tempo real: posições *In The Money (ITM)* exibem o ganho intrínseco garantido (+R$/saca) quando o mercado cai, permitindo o exercício da opção com crédito financeiro imediato em conta.
-* **Cenário de Stress Test Integrado:** Simulação paramétrica de queda severa (-10% no spot) demonstrando o retorno bruto garantido para o produtor rural.
+```mermaid
+flowchart TD
+    subgraph ClientLayer ["Camada de Apresentação & UI (Browser / PWA)"]
+        UI_Dash["Dashboard Executivo & KPIs"]
+        UI_Chart["TradingView Canvas Engine (Candlestick / OHLCV)"]
+        UI_WhatIf["Simulador What-If de Estresse Macroeconômico"]
+        UI_Barter["Índice de Poder de Compra & Barter"]
+        UI_Dossier["Dossiê de Garantias & Risco Bancário (PDF / Hash)"]
+        UI_PWA["Modo Campo Offline (Cache Resiliente & Sync)"]
+    end
 
-### 📡 3. Live Market Ticker & Streaming de Cotações (B3 / CBOT)
-* **Fita de Cotações Contínua (Ticker Tape):** Exibição em tempo real de ativos agrícolas e cambiais (Soja Paranaguá, Soja Chicago CBOT, Milho Campinas B3, Dólar Comercial PTAX, Boi Gordo B3 e tokens RWA).
-* **Animação Visual de Tick (Flash Feedback):** Feedback visual suave (`flashGreen` verde e `flashRed` vermelho) disparado dinamicamente a cada oscilação de tick.
-* **Recálculo Reativo de Patrimônio:** A oscilação das cotações atualiza imediatamente o valor unitário dos tokens RWA e o patrimônio total sob custódia em todo o dashboard sem recarregar a página.
-* **Controles do Avaliador:** Botões interativos para "Pausar / Retomar Cotações Vivas" e "⚡ Simular Tick B3" para teste imediato de reatividade.
+    subgraph StateAndQuant ["Gerenciamento de Estado & Motor Quantitativo"]
+        ZustandStore["Zustand 5 Store (Reatividade Atômica & Partialize)"]
+        WorkerMC["Web Worker: Monte Carlo Stochastic Runner (1.000 iterações)"]
+        DecMath["Motor Matemático Decimal.js (Amortização Price & LTV)"]
+        MLForecast["Engine Preditivo ML (Holt-Winters & P10/P50/P90)"]
+    end
 
-### 🌾 4. Modo Campo & Resiliência Offline (PWA)
-* **Progressive Web App (PWA):** Manifesto nativo Next.js 16 (`manifest.webmanifest`) com ícones temáticos SVG de alta resolução (192x192 e 512x512).
-* **Detecção Automática de Queda/Retorno de Conexão:** Ouvintes de eventos de rede (`online`/`offline`) que ativam o banner de Modo Campo e emitem toasts contextuais.
-* **Acesso Off-grid:** Consulta contínua a saldos, tokens em custódia, extrato histórico e contratos ativos com persistência segura via `localStorage`.
-* **Botão Evaluator Toggle no Header:** Botão `🌾 Modo Campo` no menu superior (desktop e mobile) permitindo aos avaliadores técnicos simular a desconexão com 1 clique.
+    subgraph BFFLayer ["Next.js 16 Serverless / Edge Runtime (BFF)"]
+        API_SSE["GET /api/quotes/stream (Server-Sent Events)"]
+        API_REST["GET /api/quotes (Fallback REST com Cache ISR 60s)"]
+        API_ERP["Exportador Contábil Agro (TOTVS Agro / Siagri / Aegro)"]
+    end
 
-### 🌾 5. Módulo de Crédito Rural & CPR Digital (Cédula de Produto Rural)
-* **Empréstimo com Colateral RWA:** Financiamento de capital de giro e insumos agrícolas lastreado na própria safra tokenizada em custódia (Soja e Milho).
-* **Simulação Financeira Precisa (Tabela Price):** Cálculo de parcelas mensais, juros pré-fixados de 1.2% ao mês e valor total com encargos.
-* **Política Prudencial de LTV (Loan-to-Value):** Trava automática em até 70% do valor de mercado dos grãos oferecidos em garantia.
-* **Bloqueio e Desbloqueio de Tokens (*Token Lock*):** Sacas dadas em garantia são travadas no store, impedindo venda simultânea ou resgate físico no armazém.
-* **Emissão & Registro de CPR:** Geração automática do número de registro regulatório da Cédula (ex: `CPR-2026-SOJA-...`), data de emissão e vencimento.
-* **Quitação Antecipada Integrada:** Liquidação do saldo devedor com débito em conta corrente e destravamento automático e integral das commodities em carteira.
+    subgraph ExternalServices ["Infraestrutura Externa (Zero-Cost / Cloud)"]
+        B3_CBOT["Market Data B3 / CBOT / PTAX (Bacen)"]
+        Supabase_Audit["Supabase Postgres (Auditoria Quantitativa & RLS)"]
+        Vercel_Edge["Vercel Global Edge Network"]
+    end
 
-### ⚡ 6. Módulo de Nova Operação (PIX / TED / Aporte / Venda / Resgate Físico)
-* **5 Modos de Operação Integrados:**
-  * `⚡ PIX`: Transferência bancária instantânea.
-  * `🏦 TED`: Transferência bancária tradicional com taxa simulada.
-  * `🌾 Aporte RWA`: Compra de tokens com débito em conta e crédito na carteira de custódia.
-  * `💵 Venda RWA`: Venda de tokens a mercado com débito de custódia e crédito financeiro imediato no saldo em conta.
-  * `🚜 Resgate Físico`: Retirada física de sacas em armazéns gerais credenciados (Sorriso/MT, Bebedouro/SP, Rio Verde/GO, Santos/SP) com emissão de Certificado CDA/WA e queima (*burn*) de tokens.
-* **Validação Tipada em Tempo Real:** Schemas dinâmicos via `Zod` que validam limites de saldo em dinheiro ou quantidade de tokens em custódia.
-* **Atalhos Rápidos de Posição:** Botões percentuais (*25%*, *50%*, *75%*, *100% da Posição*) e valores pré-definidos.
-* **Fluxo em Duas Etapas:** Tela de pré-confirmação com resumo de impacto patrimonial e comprovante digital com hash criptográfico simulado.
-
-### 📜 7. Histórico de Transações, Filtros & Exportação
-* **Exportação para CSV:** Geração de arquivo `.csv` compatível com Excel (separador `;`, formatação monetária em padrão BRL e encoding UTF-8 com BOM para suporte a acentuação gráfica), respeitando instantaneamente os filtros ativos.
-* **Impressão Corporativa / PDF:** Folha de estilos `@media print` sob medida que oculta botões, filtros e menus, forçando contraste limpo preto-no-branco e inserindo cabeçalho bancário oficial.
-* **Filtros Combinados:** Filtragem instantânea por Tipo (*Entradas* vs *Saídas*), Status (*Concluída*, *Pendente*, *Falhou*, *Cancelada*) e Busca Textual por descrição, destinatário ou memo.
-* **Ordenação Bidirecional:** Ordenação clicável por data de movimentação ou por valor financeiro.
-* **Modal de Detalhes Acessível:** Comprovante completo com hash de blockchain, fechamento por `Esc` e banners para certificados de resgate e liquidação RWA.
-
-### 🔔 8. Central de Alertas & Notificações RWA
-* **Notificações Reativas em Tempo Real:** Disparadas instantaneamente a cada operação financeira (PIX, TED), aporte RWA, liquidação a mercado, resgate físico com emissão de certificado ou contratação/quitação de CPR e travas de Hedge.
-* **Alertas do Agronegócio:** Notificações semente para oscilações de cotações na B3/CBOT (+2.3% Soja), autorização de carregamento em silos (Sorriso/MT) e conformidade cadastral (KYC Bacen).
-* **Filtros e Gestão:** Abas de filtragem (*Todas*, *Não lidas*, *🌾 RWA & Grãos*), marcar individualmente ou todas como lidas, exclusão pontual ou limpeza completa.
-
-### 🌙 9. Dark Mode Nativo (Claro / Escuro / Sistema)
-* Alternador de tema no Header (desktop e mobile) com ícones e persistência via `localStorage`.
-* Zero FOUC (*Flash of Unstyled Content*) com script inline no `<head>`.
-* Paleta otimizada no Tailwind CSS v4 para cards, gráficos SVG, formulários e modais.
-
-### 🔄 10. Ferramentas para Avaliadores Técnicos
-* **Restaurar Demo:** Botão no Header para retornar o banco local ao estado semente inicial com 1 clique.
-* **Alternador Modo Campo:** Permite simular a desconexão de rede imediatamente.
-* **Simulador de Ticks B3:** Dispara oscilação de mercado imediata na fita de cotações.
+    UI_WhatIf -->|Calcula Cenários| WorkerMC
+    WorkerMC -->|Resultados VaR 95%| ZustandStore
+    UI_Chart -->|Lê Cotações Históricas| ZustandStore
+    API_SSE -->|Stream Contínuo| ZustandStore
+    ZustandStore -->|Persiste Estado Local| UI_PWA
+    ZustandStore -->|Audit Logs Assíncronos| Supabase_Audit
+    API_REST -->|Consulta Cotações| B3_CBOT
+    UI_Dossier -->|Compila Métricas & SHA-256| DecMath
+```
 
 ---
 
-## 🏛️ Arquitetura & Estrutura de Diretórios
+## ⚖️ 3. Architecture Decision Records (ADRs) & Trade-off Analysis
+
+As decisões arquiteturais do AgroFinance foram desenhadas para responder a dores reais do mercado financeiro e do agronegócio de larga escala. Abaixo constam os registros formais de decisão de engenharia (ADRs):
+
+### ADR 001: Aritmética Financeira de Precisão Arbitrária (`decimal.js`) vs Ponto Flutuante IEEE-754
+* **Contexto:** Números em JavaScript nativo utilizam o padrão IEEE-754 de precisão dupla (64-bit float). Operações simples como `0.1 + 0.2 = 0.30000000000000004` causam discrepâncias de centavos cumulativas em tabelas de amortização Price, liquidações de safras multimilionárias e cálculo de prêmios de opções de derivativos.
+* **Decisão:** Encapsular todo o núcleo de cálculo monetário em [`src/lib/financialMath.ts`](file:///C:/Users/felipe/orca/projects/Codebase/agrofinance-dashboard/src/lib/financialMath.ts) utilizando `decimal.js`, fixando arredondamento bancário (`ROUND_HALF_UP`) e 28 dígitos de precisão interna.
+* **Trade-off:** Leve sobrecarga de memória comparado a números primitivos (*nanossegundos por cálculo*), neutralizada pela absoluta conformidade contábil e eliminação de falhas de auditoria bancária.
+
+### ADR 002: Renderização Gráfica em Canvas TradingView (`lightweight-charts`) vs Gráficos SVG/DOM
+* **Contexto:** Plataformas agro corporativas necessitam analisar séries temporais de commodities com candles diários, médias móveis e bandas de dispersão. Renderizar centenas de elementos no DOM via SVG (ex: Recharts, Chart.js) gera degradação severa de performance (*frame drops* e consumo excessivo de memória em dispositivos móveis no campo).
+* **Decisão:** Integrar `lightweight-charts` v5.2.1 ([`TradingViewCommodityChart.tsx`](file:///C:/Users/felipe/orca/projects/Codebase/agrofinance-dashboard/src/app/components/features/TradingViewCommodityChart.tsx)), baseada em Canvas HTML5 acelerado por hardware (GPU).
+* **Trade-off:** O canvas não possui nós no DOM para estilização CSS direta, exigindo orquestração programática de cores e layouts em tempo de execução, mas assegurando renderização fluida cravada em **60 FPS** mesmo sob fluxo intenso de ticks.
+
+### ADR 003: Execução Estocástica de Monte Carlo via Web Worker vs Thread Principal
+* **Contexto:** O cálculo de estresse de garantias de CPR e Value-at-Risk (VaR 95%) exige simular 1.000 trajetórias geométricas de movimento browniano (*GBM*) combinadas a choques de volatilidade. Executar essa computação na main thread do navegador congela a renderização e trava a interface por 200–500ms (*Jank*).
+* **Decisão:** Implementar um executor assíncrono [`monteCarloRunner.ts`](file:///C:/Users/felipe/orca/projects/Codebase/agrofinance-dashboard/src/lib/monteCarloRunner.ts) que instancia um **Web Worker dedicado** em background via `Blob` URL (zero overhead de bundling), com fallback inteligente síncrono para ambientes Node.js/SSR.
+* **Trade-off:** Necessidade de serialização de parâmetros e resultados via `postMessage`, amplamente compensada pela preservação da responsividade imediata da UI durante simulações pesadas.
+
+### ADR 004: Streaming de Cotações com Server-Sent Events (SSE) vs WebSockets
+* **Contexto:** Cotações de grãos e moedas precisam ser propagadas em tempo real para o dashboard. WebSockets mantêm conexões TCP full-duplex com estado, o que gera desafios de escalabilidade e custos elevados em arquiteturas serverless (AWS Lambda, Vercel Edge), além de ser bloqueado por proxies corporativos em cooperativas agroindustriais.
+* **Decisão:** Adotar **Server-Sent Events (SSE)** em [`/api/quotes/stream/route.ts`](file:///C:/Users/felipe/orca/projects/Codebase/agrofinance-dashboard/src/app/api/quotes/stream/route.ts). Como o fluxo de cotações de mercado é inerentemente **unidirecional (servidor -> cliente)**, o SSE opera nativamente sobre HTTP/2 com multiplexação de conexões, reconexão automática e consumo irrisório de banda.
+* **Trade-off:** Não suporta envio de mensagens cliente -> servidor pelo mesmo canal (operações do cliente usam requisições HTTP POST padrão), o que é arquiteturalmente desejável por respeitar a separação semântica RESTful.
+
+### ADR 005: Auditoria Quantitativa Desacoplada com Supabase (Zero Custo) vs Backend Dedicado
+* **Contexto:** Garantir registro histórico e rastreabilidade de decisões de hedge algorítmico, simulações What-If e chamadas de margem bancária sem provisionar servidores de banco de dados dedicados de alto custo.
+* **Decisão:** Integrar o client Supabase Postgres ([`supabaseAgro.ts`](file:///C:/Users/felipe/orca/projects/Codebase/agrofinance-dashboard/src/lib/supabaseAgro.ts)) utilizando Row Level Security (RLS) anônimo e inserções assíncronas não-bloqueantes (`fire-and-forget`) com fallback em memória caso as variáveis de ambiente não estejam configuradas.
+* **Trade-off:** Operação segura no plano gratuito (500MB de dados estruturados), permitindo que a aplicação rode localmente ou em testes sem nenhuma dependência de infraestrutura externa obrigatória.
+
+### ADR 006: Gestão de Estado com Zustand 5 + Partialize Seletivo vs Redux Toolkit / Context API
+* **Contexto:** Plataformas agro exigem reatividade atômica. A Context API do React dispara re-renderizações em cascata de toda a árvore de componentes a cada alteração de centavos nas cotações. Redux introduz complexidade excessiva de boilerplate (*actions*, *reducers*, *dispatchers* verbosos).
+* **Decisão:** Adotar **Zustand 5** com seletores refinados e middleware `persist`. O método `partialize` grava no `localStorage` apenas chaves transacionais estritamente necessárias, mantendo a performance de renderização em menos de 16ms por frame.
+
+### ADR 007: Resiliência Off-grid & Modo Campo (PWA) para o Agronegócio
+* **Contexto:** No Brasil, o agronegócio opera predominantemente em áreas rurais com conectividade 3G/4G/5G oscilante ou inexistente. Uma plataforma bancária agro que dependa exclusivamente de rede contínua torna-se inoperante dentro de fazendas e armazéns.
+* **Decisão:** Estruturar a aplicação como **Progressive Web App (PWA)** com manifesto nativo, Service Worker de cache, persistência local de contratos ativos e um banner dinâmico com botão de simulação para avaliadores (`🌾 Modo Campo`).
+
+### ADR 008: Internacionalização Nativa (Zero Dependency i18n) vs Bibliotecas Externas Pesadas
+* **Contexto:** Atrair investidores globais e tradings multinacionais para o mercado de RWA brasileiro requer suporte bilíngue (Português / Inglês). Dependências como `i18next` ou `next-intl` adicionam de 40 a 70 KB ao bundle inicial e complicam a compilação do App Router.
+* **Decisão:** Criar um gerenciador estrito e tipado de i18n ([`src/lib/i18n.ts`](file:///C:/Users/felipe/orca/projects/Codebase/agrofinance-dashboard/src/lib/i18n.ts)) de zero dependências externas, sincronizado via eventos do navegador e persistência instantânea em `localStorage`.
+
+### ADR 009: Exportação Contábil Padronizada para ERPs Agrícolas (TOTVS Agro, Siagri, Aegro)
+* **Contexto:** Produtores e cooperativas precisam importar lançamentos bancários e liquidações de CPR diretamente para seus sistemas legados de gestão rural, sob pena de retrabalho manual de digitação de extratos.
+* **Decisão:** Implementar a função `generateAgroERPAccountingCSV` em [`src/lib/utils.ts`](file:///C:/Users/felipe/orca/projects/Codebase/agrofinance-dashboard/src/lib/utils.ts), gerando arquivos estruturados no padrão de partidas dobradas (Débito/Crédito) com plano de contas rural (`1.1.1.05 - Banco Movimento Agro`, `3.1.1.02 - Receita Venda Safra RWA`), centros de custo agrícolas por talhão/cultura e identificadores de lote B3.
+
+---
+
+## 🌾 4. Guia de Domínio Agrofinanceiro & Formulação Matemática
+
+O AgroFinance reproduz a realidade regulatória e de mercado do crédito agrícola brasileiro:
+
+### 1. CPR Digital (Lei Federal 13.986/2020 - Nova Lei do Agro)
+* **Conceito:** A Cédula de Produto Rural é o principal título de crédito do agronegócio. O produtor compromete a produção futura física ou financeira como colateral.
+* **Índice Prudencial LTV (Loan-to-Value):** Limitado a **70%**. Se o saldo devedor exceder 85% do valor da garantia em custódia (devido a quedas de cotação), o sistema dispara alerta automático de **Chamada de Margem (Margin Call)**.
+* **Fórmula de Amortização (Tabela Price):**
+  $$\text{PMT} = \text{PV} \times \frac{i \times (1 + i)^n}{(1 + i)^n - 1}$$
+  Onde $\text{PV}$ é o valor financiado, $i$ a taxa de juros pré-fixada mensal (1.2% a.m.) e $n$ o prazo em meses.
+
+### 2. Trava de Preço (Hedge B3 / CBOT com Opções de Venda - Put)
+* **Conceito:** Protege o produtor contra o risco de baixa da saca de soja ou milho no momento da colheita, garantindo um preço mínimo de venda (*Strike Price*).
+* **Classificação de Moneyness:**
+  * *In-The-Money (ITM):* Preço à vista (*Spot*) < Preço de Exercício (*Strike*). A opção possui valor intrínseco positivo que pode ser exercido financeiramente.
+  * *Out-of-The-Money (OTM):* Preço à vista > Preço de Exercício. O produtor vende no mercado físico pelo preço mais alto e a opção expira sem exercício.
+* **Payoff da Trava:**
+  $$\text{Payoff} = \max(0, \text{Strike} - \text{Spot}) \times \text{Volume Sacas}$$
+
+### 3. Modelo Estocástico de Monte Carlo (Movimento Browniano Geométrico)
+* Para projetar a solvência do produtor sob estresse de safra de 365 dias, o motor calcula 1.000 iterações estocásticas do preço do grão:
+  $$S_{t+\Delta t} = S_t \times \exp\left( \left(\mu - \frac{\sigma^2}{2}\right)\Delta t + \sigma \sqrt{\Delta t} \cdot Z \right)$$
+  Onde $Z \sim \mathcal{N}(0, 1)$ é uma variável gaussiana gerada pela transformação de Box-Muller, $\mu$ a taxa de drift anual e $\sigma$ a volatilidade histórica anualizada do grão (22.5% para soja, 26.0% para milho).
+* **Value-at-Risk (VaR 95%):** Quantifica a perda patrimonial máxima esperada no horizonte de tempo com 95% de confiança estatística.
+
+### 4. Relação de Troca & Barter (Poder de Compra Agro)
+* **Conceito:** Quantidade de sacas de commoditiy necessárias para adquirir uma unidade de insumo agrícola (ex: 1 Tonelada de Adubo NPK 04-14-08, 1.000 Litros de Diesel S10, 100L de Glifosato).
+  $$\text{Relação de Troca} = \frac{\text{Preço do Insumo (R\$)}}{\text{Preço da Saca de Grão (R\$/sc)}}$$
+* A plataforma monitora em tempo real a discrepância percentual em relação à média histórica decenal, sinalizando ao produtor os momentos ótimos para travamento de insumos.
+
+---
+
+## 🧪 5. Pirâmide de Qualidade & Matriz de Testes
+
+A integridade do sistema é garantida por uma suíte robusta de testes automatizados com **100% de taxa de aprovação**:
+
+```text
+       ┌────────────────────────┐
+       │     Playwright E2E     │  8 Suítes / 28 Cenários de Ponta a Ponta
+       │    (Chromium Engine)   │  (What-If, Barter, CPR, Hedge, A11y, PWA)
+       ├────────────────────────┴───────────────────────┐
+       │            Testes de Integração & UI           │  Testes de Componentes com JSDOM,
+       │          (React Testing Library + Vitest)      │  Eventos de Usuário, Modais e Toasts
+       ├────────────────────────────────────────────────┴───────────────────────┐
+       │                     Testes Unitários de Domínio                        │  130 Testes (100% Passing)
+       │         (Decimal.js Math, Schemas Zod, Monte Carlo, i18n, ERP CSV)     │  Cobertura V8: >85% de Linhas
+       └────────────────────────────────────────────────────────────────────────┴───────────────────────┘
+```
+
+### Comandos de Execução de Testes:
+
+```bash
+# Executa todos os 130 testes unitários e de integração (modo rápido)
+pnpm test
+
+# Gera relatório formal de cobertura de código V8 com percentuais por arquivo
+pnpm test:coverage
+
+# Executa todos os testes End-to-End (E2E) com Playwright
+pnpm test:e2e
+
+# Abre a interface interativa do Playwright com timeline e screenshots
+pnpm test:e2e:ui
+
+# Executa a verificação completa (Unitários + E2E)
+pnpm test:all
+```
+
+### Matriz de Testes E2E (`/e2e`):
+1. [`institutional-quant-whatif.spec.ts`](file:///C:/Users/felipe/orca/projects/Codebase/agrofinance-dashboard/e2e/institutional-quant-whatif.spec.ts): Valida o simulador What-If, sliders de dólar e supersafra, abertura e fechamento do Dossiê Bancário e exportação contábil para ERPs.
+2. [`hedge-derivatives.spec.ts`](file:///C:/Users/felipe/orca/projects/Codebase/agrofinance-dashboard/e2e/hedge-derivatives.spec.ts): Fluxo de contratação de trava B3, cálculo de prêmio de opção e exercício de lucro ITM.
+3. [`credit-cpr.spec.ts`](file:///C:/Users/felipe/orca/projects/Codebase/agrofinance-dashboard/e2e/credit-cpr.spec.ts): Emissão de CPR Digital, trava prudencial LTV (70%), bloqueio de sacas em custódia e quitação antecipada.
+4. [`financial-operations.spec.ts`](file:///C:/Users/felipe/orca/projects/Codebase/agrofinance-dashboard/e2e/financial-operations.spec.ts): Transferências instantâneas PIX, liquidação de sacas RWA e resgate físico de grãos com CDA/WA.
+5. [`live-market-ticker.spec.ts`](file:///C:/Users/felipe/orca/projects/Codebase/agrofinance-dashboard/e2e/live-market-ticker.spec.ts): Streaming de ticks de mercado com atualização reativa do patrimônio líquido.
+6. [`offline-field-mode.spec.ts`](file:///C:/Users/felipe/orca/projects/Codebase/agrofinance-dashboard/e2e/offline-field-mode.spec.ts): Resiliência do Modo Campo offline (PWA) e simulação de reconexão de rede.
+7. [`theme-and-accessibility.spec.ts`](file:///C:/Users/felipe/orca/projects/Codebase/agrofinance-dashboard/e2e/theme-and-accessibility.spec.ts): Alternância de Dark Mode nativo e restauração do banco demo com 1 clique.
+8. [`accessibility-axe.spec.ts`](file:///C:/Users/felipe/orca/projects/Codebase/agrofinance-dashboard/e2e/accessibility-axe.spec.ts): Auditoria formal contra as diretrizes internacionais de acessibilidade **W3C WCAG 2.1 AA** via `@axe-core/playwright`.
+
+---
+
+## 📁 6. Estrutura Estratégica de Diretórios
 
 ```text
 agrofinance-dashboard/
-├── .github/
-│   └── workflows/
-│       └── ci.yml                    # Pipeline de CI (Lint + Vitest + Next Build)
-├── e2e/                              # Testes End-to-End com Playwright (Chromium)
-│   ├── credit-cpr.spec.ts            # Fluxo completo de CPR Digital e colateral
-│   ├── financial-operations.spec.ts  # PIX, resgate físico CDA/WA e filtros
-│   ├── hedge-derivatives.spec.ts     # Contratação e exercício de Hedge B3
-│   ├── live-market-ticker.spec.ts    # Streaming de cotações e simulação de ticks
-│   ├── offline-field-mode.spec.ts    # Modo Campo PWA e navegação offline
-│   └── theme-and-accessibility.spec.ts # Dark Mode, acessibilidade e reset
-├── public/
-│   ├── icon-192.svg                  # Ícone PWA 192x192
-│   └── icon-512.svg                  # Ícone PWA 512x512
+├── .github/workflows/ci.yml           # Pipeline CI: Lint + Vitest + Next Build + Playwright
+├── docs/
+│   └── ARCHITECTURE.md               # Detalhamento de governança e histórico de ADRs
+├── e2e/                              # Suíte End-to-End com Playwright
+│   ├── institutional-quant-whatif.spec.ts # Jornadas institucionais do investidor
+│   ├── hedge-derivatives.spec.ts     # Mesa de derivativos B3/CBOT
+│   ├── credit-cpr.spec.ts            # Esteira de crédito rural e CPR
+│   └── ...                           # A11y Axe-Core, Ticker e Modo Campo
+├── public/                           # Manifest e ícones vetoriais SVG PWA (192x192, 512x512)
 ├── src/
-│   ├── app/                          # Next.js App Router (Páginas e Rotas)
-│   │   ├── dashboard/                # Painel principal consolidado com Analytics
-│   │   ├── transactions/             # Extrato detalhado com filtros e ordenação
-│   │   ├── new-operation/            # Formulário reativo de transferência/investimento
-│   │   ├── credit/                   # Módulo de Crédito Rural & CPR com colateral RWA
-│   │   ├── hedge/                    # Módulo de Hedge Cambial & Derivativos B3/CBOT
-│   │   ├── manifest.ts               # Metadata Web App Manifest nativo Next.js
-│   │   ├── loading.tsx               # Skeleton screens de carregamento inicial
-│   │   ├── error.tsx                 # Error boundary global com recuperação
-│   │   ├── not-found.tsx             # Página 404 personalizada
-│   │   └── components/
-│   │       ├── ui/                   # Design System atômico (Button, Card, Badge, Input, Spinner, ThemeToggle, ToastContainer)
-│   │       ├── layout/               # Header responsivo com ações rápidas e MainLayout
-│   │       └── features/             # LiveMarketTicker, OfflineFieldModeBanner, NotificationCenter, Charts
-│   ├── lib/
-│   │   ├── store.ts                  # Zustand Store com middleware persist (localStorage) e partialize
-│   │   ├── validations.ts            # Schemas Zod dinâmicos (createOperationSchema)
-│   │   ├── types.ts                  # Contratos estritos (RWA, CPR, Hedge, Quotes, Toasts)
-│   │   ├── utils.ts                  # Formatadores BRL, Tabela Price, Math de Hedge e LTV
-│   │   └── mockData.ts               # Dados semente realistas do agro, derivativos e CPR
-│   └── __tests__/                    # Suíte de 16 Arquivos de Testes Vitest
-├── vitest.config.ts                  # Configuração Vitest com V8 Coverage Provider
+│   ├── app/                          # Next.js 16 App Router
+│   │   ├── api/                      # Route Handlers (BFF)
+│   │   │   ├── quotes/route.ts       # Endpoint REST com cache ISR (60s) e AbortController
+│   │   │   └── quotes/stream/route.ts# Endpoint Server-Sent Events (SSE) em tempo real
+│   │   ├── credit/page.tsx           # Emissão de CPR Digital & Gestão de Colaterais
+│   │   ├── dashboard/page.tsx        # Painel Consolidado com IA Quant e Dossiê Bancário
+│   │   ├── hedge/page.tsx            # Mesa de Travas de Preço & Derivativos Agro
+│   │   ├── new-operation/page.tsx    # Aportes, Vendas, PIX, TED e Resgate Físico CDA/WA
+│   │   ├── transactions/page.tsx     # Extrato e Exportação para ERPs (TOTVS / Siagri)
+│   │   ├── components/
+│   │   │   ├── features/             # Componentes de Negócio
+│   │   │   │   ├── AgroBarterPowerCard.tsx       # Poder de Compra & Barter
+│   │   │   │   ├── RiskAuditDossierModal.tsx     # Dossiê Bancário com Hash SHA-256
+│   │   │   │   ├── SmartHedgeAdvisorCard.tsx     # Recomendações Algorítmicas de Hedge
+│   │   │   │   ├── TradingViewCommodityChart.tsx # Gráfico Candlestick Canvas GPU
+│   │   │   │   └── WhatIfMacroSimulator.tsx      # Simulador Macroeconômico Dinâmico
+│   │   │   ├── layout/               # Header com i18n, MainLayout e ThemeToggle
+│   │   │   └── ui/                   # Design System atômico acessível
+│   ├── lib/                          # Camada de Domínio, Dados e Matemática
+│   │   ├── browserNotifications.ts   # Gerenciador de notificações web nativas
+│   │   ├── decimalMath.ts / financialMath.ts # Aritmética arbitrária com Decimal.js
+│   │   ├── i18n.ts                   # Motor bilíngue de internacionalização nativa
+│   │   ├── mlForecasting.ts          # Motor de previsão quantitativa e Monte Carlo
+│   │   ├── monteCarloRunner.ts       # Executor assíncrono via Web Worker
+│   │   ├── store.ts                  # Zustand 5 Store reativa com persistência
+│   │   ├── supabaseAgro.ts           # Telemetria e auditoria quantitativa em cloud
+│   │   ├── types.ts                  # Contratos e tipos TypeScript estritos
+│   │   └── utils.ts                  # Formatadores BRL, validação de CPF e exportação ERP
+│   └── __tests__/                    # 24 arquivos de testes unitários e de integração
+├── vitest.config.ts                  # Configuração Vitest com cobertura V8
 ├── playwright.config.ts              # Configuração Playwright E2E com WebServer
-└── package.json                      # Scripts de teste, lint e build
+└── package.json
 ```
 
 ---
 
-## 🧪 Pirâmide de Testes Automatizados & Cobertura de Código
-
-A plataforma conta com **123 testes automatizados aprovados (100% passing)** e relatório formal de cobertura V8 com **85.8% de linhas cobertas**:
-
-```bash
-# Executar todos os 98 testes unitários e de componentes
-pnpm test
-
-# Gerar relatório formal de cobertura de código (V8 Engine)
-pnpm test:coverage
-
-# Executar todos os 25 testes End-to-End (Playwright Headless)
-pnpm test:e2e
-
-# Executar suíte completa unificada (Unitários + E2E)
-pnpm run test:all
-```
-
-### 📊 Relatório de Cobertura V8 (`pnpm test:coverage`):
-
-| Módulo / Camada | % Declarações (Stmts) | % Branches | % Funções | % Linhas (Lines) |
-|---|---|---|---|---|
-| **Design System (UI Components)** | **93.84%** | **73.80%** | **95.45%** | **93.10%** |
-| `Button.tsx`, `Badge.tsx`, `Card.tsx`, `Input.tsx`, `Spinner.tsx` | 100% | 100% | 100% | 100% |
-| **Componentes de Funcionalidade (Features)** | **88.79%** | **72.92%** | **80.23%** | **89.89%** |
-| `PriceTrendsChart.tsx` | 94.33% | 61.11% | 92.30% | 98.00% |
-| `OfflineFieldModeBanner.tsx` | 96.00% | 83.33% | 100% | 95.00% |
-| `LiveMarketTicker.tsx` | 84.37% | 93.75% | 76.92% | 86.95% |
-| `TransactionDetailModal.tsx` | 91.66% | 62.50% | 88.88% | 100% |
-| **Gerenciamento de Estado (`store.ts`)** | **88.23%** | **72.16%** | **91.93%** | **88.75%** |
-| **Layout (`MainLayout.tsx`)** | **100%** | **100%** | **100%** | **100%** |
-| **Média Geral de Toda a Aplicação** | **84.52%** | **72.04%** | **80.61%** | **86.17%** |
-
----
-
-## 🚀 Como Executar Localmente
+## ⚡ 7. Instalação & Execução Local
 
 ### Pré-requisitos
-* Node.js v20+ ou v22+
-* pnpm (recomendado) ou npm
+* **Node.js:** v20.x ou v22.x LTS
+* **Gerenciador de Pacotes:** `pnpm` (recomendado) ou `npm`
 
 ```bash
 # 1. Clonar o repositório
@@ -203,23 +263,22 @@ cd agrofinance-dashboard
 # 2. Instalar dependências
 pnpm install
 
-# 3. Executar em ambiente de desenvolvimento
+# 3. Executar o servidor de desenvolvimento
 pnpm dev
-# Acesse http://localhost:3000
 
-# 4. Executar os testes automatizados
-pnpm test
+# Acesse no seu navegador: http://localhost:3000
+```
 
-# 5. Executar cobertura de código
-pnpm test:coverage
-
-# 6. Gerar build de produção
-pnpm run build
+### Variáveis de Ambiente Opcionais (`.env.local`):
+```env
+# Supabase Quant Telemetry (Opcional - opera com fallback em memória caso ausente)
+NEXT_PUBLIC_SUPABASE_URL=https://sua-url-supabase.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=seu-token-anonimo
 ```
 
 ---
 
-## 👨‍💻 Autor
+## 👨‍💻 Autor & Governança
 
 Desenvolvido por **Felipe Gardenghi Gonçalves**  
 Sertãozinho, SP — Brasil

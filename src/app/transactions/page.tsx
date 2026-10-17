@@ -16,6 +16,7 @@ import {
   translateTransactionType, 
   sortBy, 
   generateTransactionsCSV, 
+  generateAgroERPAccountingCSV,
   downloadCSV 
 } from '@/lib/utils';
 import type { Transaction, SortField, SortDirection } from '@/lib/types';
@@ -86,6 +87,16 @@ export default function TransactionsPage() {
     setTimeout(() => setExportFeedback(null), 3500);
   };
 
+  // Exportar formato contábil para ERP Agro (TOTVS / Siagri / Aegro)
+  const handleExportERPCSV = () => {
+    if (filteredTransactions.length === 0) return;
+    const csvData = generateAgroERPAccountingCSV(filteredTransactions);
+    const dateStr = new Date().toISOString().slice(0, 10);
+    downloadCSV(csvData, `agrofinance-erp-contabil-${dateStr}.csv`);
+    setExportFeedback(`Extrato contábil para ERP Agro (TOTVS/Siagri) exportado (${filteredTransactions.length} partidas)!`);
+    setTimeout(() => setExportFeedback(null), 3500);
+  };
+
   // Disparar impressão / salvar em PDF
   const handlePrint = () => {
     if (typeof window !== 'undefined') {
@@ -132,7 +143,7 @@ export default function TransactionsPage() {
             <p className="text-gray-600 dark:text-gray-400 mt-1">Histórico completo de movimentações e liquidações</p>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-2.5">
             <Button
               variant="outline"
               size="sm"
@@ -141,8 +152,20 @@ export default function TransactionsPage() {
               className="flex items-center gap-1.5"
             >
               <span>📥</span>
-              <span>Exportar CSV</span>
+              <span>CSV Padrão</span>
               <span className="text-xs text-gray-500 dark:text-gray-400 font-normal">({filteredTransactions.length})</span>
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportERPCSV}
+              disabled={filteredTransactions.length === 0}
+              title="Exportar plano de contas para ERPs do Agro (TOTVS, Siagri, Aegro)"
+              className="flex items-center gap-1.5 border-agro-verde-musgo/40 text-agro-verde-musgo dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 font-semibold"
+            >
+              <span>🚜</span>
+              <span>Exportar ERP Agro</span>
             </Button>
 
             <Button

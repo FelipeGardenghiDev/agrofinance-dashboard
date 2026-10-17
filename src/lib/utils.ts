@@ -299,6 +299,53 @@ export const generateTransactionsCSV = (transactions: Transaction[]): string => 
   return '\uFEFF' + [headers.join(';'), ...rows].join('\r\n');
 };
 
+// Gera extrato contábil formatado especificamente para ERPs agrícolas (TOTVS Agro, Siagri, Aegro)
+export const generateAgroERPAccountingCSV = (transactions: Transaction[]): string => {
+  const headers = [
+    'Data_Lancamento',
+    'Conta_Debito',
+    'Conta_Credito',
+    'Valor_Liquido_BRL',
+    'Historico_Contabil',
+    'Documento_Origem',
+    'Centro_Custo_Agro',
+    'Safra_Referencia',
+    'Hash_B3_Autenticidade',
+  ];
+
+  const escapeCSV = (value: string | number | undefined | null) => {
+    if (value === undefined || value === null) return '""';
+    const str = String(value).replace(/"/g, '""');
+    return `"${str}"`;
+  };
+
+  const rows = transactions.map((tx) => {
+    const d = new Date(tx.date);
+    const dateFormatted = !isNaN(d.getTime()) ? d.toLocaleDateString('pt-BR') : tx.date;
+    const formattedAmount = tx.amount.toFixed(2).replace('.', ',');
+
+    // Mapeamento de contas contábeis do Plano de Contas Agro
+    const contaDebito = tx.type === 'IN' ? '1.1.1.05 - Banco Movimento Agro' : '2.1.2.01 - Fornecedores / Insumos';
+    const contaCredito = tx.type === 'IN' ? '3.1.1.02 - Receita Venda Safra RWA' : '1.1.1.05 - Banco Movimento Agro';
+    const safraRef = tx.description.includes('Milho') ? 'Safra 2025/2026' : 'Safra 2026/2027';
+    const centroCusto = tx.description.includes('Milho') ? 'CC-02 Lavoura Milho' : 'CC-01 Lavoura Soja';
+
+    return [
+      escapeCSV(dateFormatted),
+      escapeCSV(contaDebito),
+      escapeCSV(contaCredito),
+      escapeCSV(formattedAmount),
+      escapeCSV(`${tx.description} - ${tx.memo || 'Liquidacao RWA AgroFinance'}`),
+      escapeCSV(tx.id),
+      escapeCSV(centroCusto),
+      escapeCSV(safraRef),
+      escapeCSV(tx.txHash || 'REG-B3-SISTEMA-INTEGRADO'),
+    ].join(';');
+  });
+
+  return '\uFEFF' + [headers.join(';'), ...rows].join('\r\n');
+};
+
 // Dispara download automático do CSV no navegador
 export const downloadCSV = (content: string, filename: string) => {
   if (typeof window === 'undefined') return;

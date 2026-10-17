@@ -1,17 +1,32 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAgroFinanceStore } from '@/lib/store';
 import { formatCurrency } from '@/lib/utils';
 import ThemeToggle from '@/app/components/ui/ThemeToggle';
 import NotificationCenter from '@/app/components/features/NotificationCenter';
+import { I18nManager, type Locale } from '@/lib/i18n';
 
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [resetFeedback, setResetFeedback] = useState(false);
+  const [currentLocale, setCurrentLocale] = useState<Locale>('pt-BR');
   const pathname = usePathname();
+
+  useEffect(() => {
+    setCurrentLocale(I18nManager.getLocale());
+    const onLocaleChange = () => setCurrentLocale(I18nManager.getLocale());
+    window.addEventListener('agrofinance_locale_changed', onLocaleChange);
+    return () => window.removeEventListener('agrofinance_locale_changed', onLocaleChange);
+  }, []);
+
+  const toggleLocale = () => {
+    const next = currentLocale === 'pt-BR' ? 'en' : 'pt-BR';
+    I18nManager.setLocale(next);
+    setCurrentLocale(next);
+  };
 
   const account = useAgroFinanceStore((state) => state.account);
   const resetToDefaultData = useAgroFinanceStore((state) => state.resetToDefaultData);
@@ -77,6 +92,16 @@ const Header = () => {
 
             {/* Theme Toggle */}
             <ThemeToggle />
+
+            {/* Alternador de Idioma (i18n) */}
+            <button
+              onClick={toggleLocale}
+              title={currentLocale === 'pt-BR' ? 'Switch language to English' : 'Mudar idioma para Português'}
+              aria-label="Alternar idioma (PT-BR / EN)"
+              className="text-xs px-2 py-1.5 rounded-lg border border-white/20 text-gray-200 hover:text-white hover:bg-white/10 hover:border-white/40 active:scale-95 transition-all flex items-center gap-1 cursor-pointer shadow-xs whitespace-nowrap shrink-0 font-medium"
+            >
+              <span>{currentLocale === 'pt-BR' ? '🇧🇷 PT' : '🇺🇸 EN'}</span>
+            </button>
 
             {/* Modo Campo / Resiliência Offline */}
             <button

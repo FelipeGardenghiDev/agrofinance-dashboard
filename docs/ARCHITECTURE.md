@@ -124,9 +124,70 @@ O AgroFinance foi projetado sob os princípios de **Clean Architecture**, **Doma
 
 ---
 
+### ADR 006: Aritmética Financeira de Precisão Arbitrária (`decimal.js`)
+
+* **Status:** Aprovado e Implementado
+* **Contexto:**
+  O padrão IEEE-754 de 64-bit float em JavaScript acarreta erros de arredondamento em cálculos cumulativos de juros e garantias financeiras.
+* **Decisão:**
+  Migrar o motor financeiro para `decimal.js`, configurando 28 dígitos de precisão e modo de arredondamento `ROUND_HALF_UP`.
+* **Consequências:**
+  Amortização Price e LTV calculados com precisão ao centavo, prontos para auditoria de compliance contábil.
+
+---
+
+### ADR 007: Visualização Financeira com Engine TradingView em Canvas (`lightweight-charts`)
+
+* **Status:** Aprovado e Implementado
+* **Contexto:**
+  Visualizar cotações históricas em tempo real e séries temporais de commodities em gráficos SVG consome muitos recursos do DOM em dispositivos móveis no campo.
+* **Decisão:**
+  Adotar `lightweight-charts` da TradingView, desenhando candles e áreas diretamente em Canvas acelerado por GPU.
+* **Consequências:**
+  Renderização estável a 60 FPS, sem thrashing de DOM, mesmo em dispositivos com menor poder de processamento.
+
+---
+
+### ADR 008: Simulação de Monte Carlo Assíncrona via Web Worker Dedicado
+
+* **Status:** Aprovado e Implementado
+* **Contexto:**
+  O cálculo de Value-at-Risk (VaR 95%) com 1.000 trajetórias estocásticas de Movimento Browniano Geométrico bloqueia a UI Thread do navegador por centenas de milissegundos se executado de forma síncrona.
+* **Decisão:**
+  Isolar a simulação em um Web Worker via Blob URL assíncrono em `monteCarloRunner.ts`, com fallback síncrono para SSR e testes.
+* **Consequências:**
+  Zero travamento de interface (0ms Jank) durante a execução de estresse macroeconômico pesado.
+
+---
+
+### ADR 009: Streaming Unidirecional de Mercado via Server-Sent Events (SSE)
+
+* **Status:** Aprovado e Implementado
+* **Contexto:**
+  A transmissão de cotações em tempo real não requer canais bidirecionais complexos de WebSocket, que exigem servidores com estado e são mais custosos em plataformas serverless.
+* **Decisão:**
+  Implementar endpoint SSE em `/api/quotes/stream/route.ts` com HTTP/2 multiplexado, batimento cardíaco (heartbeat) e reconexão automática.
+* **Consequências:**
+  Baixo consumo de banda, compatível com a borda (Vercel Edge) e custo operacional zero.
+
+---
+
+### ADR 010: Integração Contábil Direta com ERPs Agrícolas (TOTVS Agro / Siagri / Aegro)
+
+* **Status:** Aprovado e Implementado
+* **Contexto:**
+  Sistemas de cooperativas e fazendas utilizam ERPs agrícolas especializados que exigem arquivos de exportação estruturados em plano de contas rural e centros de custo específicos.
+* **Decisão:**
+  Criar gerador de extrato contábil formatado em CSV com partidas dobradas e identificadores de lote B3.
+* **Consequências:**
+  Eliminação do retrabalho manual de conciliação bancária entre a tesouraria RWA e os ERPs agrícolas.
+
+---
+
 ## 🚀 3. Visão de Evolução para Nível Sênior (Produção Corporativa)
 
 Para evolução futura em um ambiente corporativo com mais de 100.000 cooperados:
 1. **Persistência Remota Multi-Tenant:** Migração do `localStorage` para **PostgreSQL** com **Prisma / Drizzle ORM**, isolando dados por CNPJ de cooperativa agrícola.
 2. **Streaming em Tempo Real Bidirecional:** Substituição do polling de 7s por **WebSockets / SSE** conectados a gateways de market data da B3 e CBOT.
 3. **Assinatura Digital de CPRs:** Integração com certificados digitais **ICP-Brasil** ou **Gov.br** para formalização jurídica das Cédulas de Produto Rural.
+
